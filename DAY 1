@@ -2,3 +2,14 @@
 
 
 
+
+
+
+reg query "HKEY_Users\S-1-5-21-2881336348-3190591231-4063445930-1003\SOFTWARE\MICROSOFT\WINDOWS\CURRENTVERSION\RUN" 
+
+
+Get-ChildItem "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList"
+
+
+
+Get-ChildItem "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\Profiles"
