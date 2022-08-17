@@ -1,15 +1,118 @@
-
-
-
-
-
-
-
 reg query "HKEY_Users\S-1-5-21-2881336348-3190591231-4063445930-1003\SOFTWARE\MICROSOFT\WINDOWS\CURRENTVERSION\RUN" 
+
+
 
 
 Get-ChildItem "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList"
 
 
 
+
 Get-ChildItem "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\Profiles"
+
+
+_________________________________________________________________________________________________________________________________________________________
+DAY 2 
+----------------------------------------------------------
+LINUX 
+
+create an alias for out linux opstation.
+
+Host linops
+    Hostname 10.50.40.254
+    User student
+    Port 22
+
+ ---------------------------
+ 
+ chmod 600 .ssh/config 
+ ssh-keygen
+ ssh-copy-id linops
+
+
+
+vim .bash_aliases
+
+
+-----------------------------------------------------------
+HOST enumeration 
+ step to check when you get into the box 
+ 
+ where am i?  hostname /uname-a
+ 
+who am i? whoami / id
+
+what am i allowed to do ?   sudo -l
+
+what's going on ? who / w / ps-elf
+
+
+what's that 
+
+why is that happenening ? 
+
+how is that happening ? 
+
+what's in there ? 
+
+
+
+
+FILES:
+
+ Root
+  /bin
+  (/usr/bin)  or (/usr/localbin) ---- which holds th binaries  such as cat 
+  
+  
+  sbin
+  (/usr/sbin)---- system binaries 
+  
+  /Home - directory that is the default for the user's home directory
+  
+  /usr     = universal  syste, resources any file designed to be used accors the entire system.
+  
+  /etc     ---- everything that's configrational
+  
+  
+  
+  
+  /var  --- thing' that are likely to change mostly logs
+  
+  /boot   --- holds the bootprocess, read  during bot process.
+  
+  
+  /dev -- has all the strign cuh as strin/strout/trerr
+  
+  
+  /lib 
+   --- libraries
+   
+   
+   /MOUNT -- to e used for permiately mount 
+   
+   /media     
+   
+   
+   /opt   -optional 
+   
+   /run      run-time variable data 
+   /tmp   --- temporarry files  - everyone has access 
+   
+   /proc ----processes
+   
+   
+   --------------------------------------------------------
+   users/groups 
+    /etc/passwd - holds the list of al the userso n the system 
+    
+   
+   
+   _-------
+   
+   /etc/passwd  
+   nginx:x:100:101:nginx:/var/lib/nginx:/sbin/nologin
+   Username:Password:User ID (UID):Group ID (GID):comments:Home directory:Home directory: 
+   
+   
+   
