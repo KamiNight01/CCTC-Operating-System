@@ -60,6 +60,9 @@ what's in there ?
 
 FILES:
 
+
+
+man  hier
  Root
   /bin
   (/usr/bin)  or (/usr/localbin) ---- which holds th binaries  such as cat 
