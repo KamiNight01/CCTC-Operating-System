@@ -117,5 +117,19 @@ man  hier
    nginx:x:100:101:nginx:/var/lib/nginx:/sbin/nologin
    Username:Password:User ID (UID):Group ID (GID):comments:Home directory:Home directory: 
    
+   _____________________________________________________________________________________________________________
+   
+   Using the commands ls and grep, identify the number of directories in /etc/ that end in .d
    
    
+   ls -l /etc | egrep '\.d$' |wc -l 
+   
+   
+   
+   Use regular expressions to match valid IP addresses. The flag is the number of addresses.
+
+HINT: What are the valid numerical values of each octet in an IP address?
+
+   
+   egrep '^((25[0-5]|2[0-4][0-9]|[1]?[1-9][0-9]?).){3}(25[0-5]|2[0-4][0-9]|[1]?[1-9]?[0-9])$' numbers |wc -l 
+
