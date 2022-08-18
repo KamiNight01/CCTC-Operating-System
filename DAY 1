@@ -155,11 +155,39 @@ WINDOWS BOOT PROCESS AND BCD EDIT
  with sub partitions up to 26 total. 
  
  
+ 1.-----
+ Ntoskrnl.exe --
  
- Ntoskrnl.exe 
  loads driver 
  then loads the KHLM
  then starts the page files.
+ ---- 
+ 2. 
+ system creates  smss 
+ smss forks into two sessions session0 and 1. session 0 is assigned to system 
+and session 1 is assigned to user.
+ 
+ 
+ 
+                    -----------SMSS.exe (session 0)           
+ SYSTEM ----> SMSS       forks to 2 different session 
+                    ------------ SMSS.exe (session1)
+ 
+ 
+ _______________________________________________________
+ https://www.docdroid.net/h44QP8i/mod-7-second-part-docx
+ https://www.docdroid.net/I2icaX7/mod-7-part-1-docx#page=7
+ ______________________________________________________
+ 
+ how to find out what mode you are using  either UEFI or BIOS 
+ 
+ type C:\windows\panther\setupact.log | findstr /i "detect boot enviroment"
+ bcdedit | findstr /i winload
+ bcdedit | findstr /i winresume
+ 
+  ( to find the current identifier do bcdedit )
+  
+  
   
  
  
