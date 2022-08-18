@@ -1,3 +1,9 @@
+sudo apt-get install  oneko
+
+
+
+
+
 reg query "HKEY_Users\S-1-5-21-2881336348-3190591231-4063445930-1003\SOFTWARE\MICROSOFT\WINDOWS\CURRENTVERSION\RUN" 
 
 
@@ -132,4 +138,33 @@ HINT: What are the valid numerical values of each octet in an IP address?
 
    
    egrep '^((25[0-5]|2[0-4][0-9]|[1]?[1-9][0-9]?).){3}(25[0-5]|2[0-4][0-9]|[1]?[1-9]?[0-9])$' numbers |wc -l 
+
+
+
+___________________________________________________________________________________________________________________________________________
+DAY5
+WINDOWS BOOT PROCESS AND BCD EDIT
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+ POST
+ 
+ BIOS                                       UEFI
+ -uses MBR                                  -uses GPT
+ 
+ MBR is the first 512 bytes on the drive. it can only have up to 4 active partition.
+ with sub partitions up to 26 total. 
+ 
+ 
+ 
+ Ntoskrnl.exe 
+ loads driver 
+ then loads the KHLM
+ then starts the page files.
+  
+ 
+ 
+ 
+
+
+
 
