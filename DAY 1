@@ -311,3 +311,6 @@ PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/u
 
  
 sudo dd if=/dev/sda of=MBRoutcast bs=1 count=512
+
+
+ to get default run levle on sysv do   cat /etc/inittab 
