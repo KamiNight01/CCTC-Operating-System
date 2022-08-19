@@ -310,3 +310,4 @@ PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/u
 /etc/profile  --- persistance
 
  
+sudo dd if=/dev/sda of=MBRoutcast bs=1 count=512
