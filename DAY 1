@@ -303,4 +303,10 @@ systemctl list-dependencies graphical.target
  systemctl list-unit-files
  
 
+
+cat /etc/environment    all global variables 
+PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"
+
+/etc/profile  --- persistance
+
  
