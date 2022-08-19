@@ -188,11 +188,119 @@ and session 1 is assigned to user.
   ( to find the current identifier do bcdedit )
   
   
-  
+___________________________________________________________________________________________________________________________________________________
+
+LINUX BOOT PROCESSS
+DAY 6
+---------------------------------------------------------------
+BIOS
+MMBR
+GRUB
+Kernel
+Init
+Runlevels
+
+
+sudo dmidecode -t bios
+ 
+ lsblk - shows which disk are in the system and where they are mounted 
+
+df -h shows you what is mounted na where it's mounted and  how muh =ch soace is used
+ 
+ sudo xxd -l 512 -g 1 - gives you the hex dump of a file.
+
+eb is the hex representation of jump to that position. (hex 90 is noop)
+
+sudo parted -l shows wheter you have bios or gpt.
+
+
+sudo dd if=/dev/sda of=MBRoutcast bs=1 count=512
+xxd MBRoutcast 
+
+configuration file for GRUB is 
+/boot/grub/grub.cfg
+
+everything in the menu item  will be run if the menu item is selected.
+
+
+`---------------------------------------------------------------
+set linux_gfx_mode=auto
+export linux_gfx_mode
+menuentry 'Ubuntu' --class ubuntu --class gnu-linux --class gnu --class os $menuentry_id_option 'gnulinux-simple-LABEL=cloudimg-rootfs' {
+	recordfail
+	load_video
+	gfxmode $linux_gfx_mode
+	insmod gzio
+	if [ x$grub_platform = xxen ]; then insmod xzio; insmod lzopio; fi
+	insmod part_msdos
+	insmod ext2
+	if [ x$feature_platform_search_hint = xy ]; then
+	  search --no-floppy --fs-uuid --set=root  6c0fba3b-b236-4b3a-b999-db7359c5d220
+	else
+	  search --no-floppy --fs-uuid --set=root 6c0fba3b-b236-4b3a-b999-db7359c5d220
+	fi
+        linux	/boot/vmlinuz-4.15.0-76-generic root=LABEL=cloudimg-rootfs ro  console=tty1 console=ttyS0
+	initrd	/boot/initrd.img-4.15.0-76-generic  
+    
+     (linux  thta's the command that loads the kernel) 
+     initrd loads the basic systems where all the drivers are preloaded)
+     
+--------------------------------------------------------------------------------------------------------
+Kernel - manages the interaction between the os and the hardware.
+
+lsmod - lists all the modules on the system and who utilizes them 
+ ps -p1 
+ 
+ ls -l /sbin/init
+ lrwxrwxrwx 1 root root 20 Nov 15  2019 /sbin/init -> /lib/systemd/systemd
+ to see if you are in system 5 or systemd. 
+ init(sysV) - service/process manager
+
+to see the run level 
+ls /etc/rc3.d
+
+or ls /etc/rc1.d tp see the kill order
+
+cat /etc/inittab to see the current run level  ( check if it's doing something weird)
+/etc/init.d   where all the  S and K scripts are in  (start and kill ) 
+ all scripts should be in etc/init.d ( ls -l  /etc/rc3.d)
+
+RUN LEVELS 
+
+0 - halt (Do NOT set initdefault to this)
+1 - Single user mode (switched from multi-user)
+2 - Multiuser, without networking
+3 - Full multiuser mode, with networking
+4 - unused
+5 - X11 (GUI)
+
+‘ls -l /etc/rc<1-6>.d’ to see different services run in each runlevel
+
+ to see the current run level 
+  ls -lisha  /lib/systemd/system/default.target 
+8499 0 lrwxrwxrwx 1 root root 16 Nov 15  2019 /lib/systemd/system/default.target -> graphical.target
+
+cat /lib/systemd/system/default.target        (used to house services that are created by package maintaners)
+
+cat /etc/systemd/system/display-manager.service    ( for user created services)
+
+cat/usr/lib/systemd/system
+
+
+systemctl list-dependencies graphical.target
+ ecerything that's below (multi-user-target0 are wants 
+ everything  1 stop under graphical.target is required
+ 
+ systemctl show -p Wants  graphical.target
  
  
  
+ systemctl cat graphical.target   to show info about it aswell as ind the location)
+ 
+ 
+/lib/systemd/system/graphical.target
 
+ systemctl list-unit-files
+ 
 
-
-
+ 
