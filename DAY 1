@@ -337,14 +337,28 @@ tasklist --- lsit all running tasks
   
   
   
-  Get-WmiObject win32_process
+  Get-WmiObject win32_process 
   Get-CimInstance  win32_process to get a deeper look at  processes.
   Get-CimInstance  win32_process | select *    ----- to get more detailed listing)
   
+  Get-CimInstance  win32_process | where -Property name -like *LSASS* | select *     ----- to select a specific one 
+  Get-CimInstance  win32_process | where {$_.Name -like "*LSASS*"} | select *
   
+  virustotal.com   ( to check for a binary ) 
   
-  
-  
+HOW TO LOOK at handles  to verify the legitimacy of a dll to see if it's coming from the correct location 
+get-process -name lsass
+Get-Process -Name lsass  | select -ExpandProperty Modules | out-file C:\Users\student\Desktop\handles -Width 4096
+Get-Process -Name lsass  | select -ExpandProperty Modules | format-table
+
+
+how to look at hidden/services 
+get-service --- to see a list of the services 
+get-content
+sc.exe showsid AJRouter   to get the service sid of Ajrouter   ( careful with this tho cause it could lead to false positive to verify with a second method.)
+
+ Get-WmiObject win32_process | Select-Object -Property name, processID, ParentprocessID, path, commandline | ft
+
 
 
 
