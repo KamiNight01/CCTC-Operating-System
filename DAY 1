@@ -313,10 +313,38 @@ PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/u
 sudo dd if=/dev/sda of=MBRoutcast bs=1 count=512
 
 
- to get default run levle on sysv do   cat /etc/inittab 
+ to get default run level on sysV do   cat /etc/inittab 
 
 
 
 
 
 egrep '^([0-9a-fA-F][02468ACE]-)([0-9a-fA-F]{2}-){4}[0-9a-fA-F]{2}$' numbers  | wc -l   --- regex for unicast mac address
+
+
+
+______________________________________________________________________________________________________________________________________________________
+DAY 7 
+NOTES
+______________________________________________________________________________________________________________________________________________________
+
+tasklist --- lsit all running tasks 
+ get-process  -  same as tasklist 
+ A process is an instance of a particular executable (.exe program file) running. 
+ A service is a process which runs in the background and does not interact with the desktop.
+  process requires interaction. 
+  dll( dynamic linked libraries) - contains pointers to resources for other programs to interact with. 
+  
+  
+  
+  Get-WmiObject win32_process
+  Get-CimInstance  win32_process to get a deeper look at  processes.
+  Get-CimInstance  win32_process | select *    ----- to get more detailed listing)
+  
+  
+  
+  
+  
+
+
+
