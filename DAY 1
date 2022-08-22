@@ -359,6 +359,7 @@ sc.exe showsid AJRouter   to get the service sid of Ajrouter   ( careful with th
 
  Get-WmiObject win32_process | Select-Object -Property name, processID, ParentprocessID, path, commandline | ft
 
-
+sc.exe queryex type=service state=inactive   
+ it shows active stuff by default so state should be specified.
 
 
