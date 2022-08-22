@@ -363,3 +363,47 @@ sc.exe queryex type=service state=inactive
  it shows active stuff by default so state should be specified.
 
 
+____________________________________________________________________________________
+scheduled tasks 
+------------------------------------------------------
+schtasks.exe /query /tn "\Microsoft\XblGameSave\XblGamesavetask"
+
+ schtasks.exe /query /tn "GoogleUpdateTaskMachineCore{A05072F6-D535-4655-AC8C-C1AF3F6F7956}" /v | format-list
+
+netstat -anob
+get-nettcpconnection
+
+----------------------------
+sys internals 
+-------------------
+process explorer  --- allows you to suspend a process instead of killing it 
+
+tcpview - 
+
+procmon   - registrry monitor and process listing to be used for monitoring the boot process.  ( start it go to file - options - enable boot login - every second 
+-  enable - restart save  temp copy and when it starts back up  and it will hold the process monitors - very useful for finding bootkits)
+( use the script given by ssgt)
+ autoruns64 ----- reads the registry and extensions point and detects to see what starts automatically. 
+ so checks for persistance/ startup applications / drivers / scheduled tasks  as well as scans the registry.
+  when chechking autorun it should never say file not found.
+ 
+  if it says checks the  permissions of a file  you might wanna google find effective permissions  sysinternals( USEFUL)
+
+______________________________________________________________________________________________________________________________________________________
+UAC -user access control
+______________________________________________________________________________________________________________________________________________________
+Auto Elvate is True
+
+./strings C:\Windows\System32\*.exe -accepteula | select-string -SimpleMatch "autoelevate"
+
+Digitally Signed
+
+./sigcheck -m C:\Windows\System32\slui.exe -accepteula | Select-String -SimpleMatch "level"
+
+Trusted Directory
+
+i.e C:\Windows\System32
+
+
+
+
