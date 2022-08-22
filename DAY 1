@@ -314,3 +314,9 @@ sudo dd if=/dev/sda of=MBRoutcast bs=1 count=512
 
 
  to get default run levle on sysv do   cat /etc/inittab 
+
+
+
+
+
+egrep '^([0-9a-fA-F][02468ACE]-)([0-9a-fA-F]{2}-){4}[0-9a-fA-F]{2}$' numbers  | wc -l   --- regex for unicast mac address
