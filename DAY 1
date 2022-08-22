@@ -363,6 +363,8 @@ sc.exe queryex type=service state=inactive
  it shows active stuff by default so state should be specified.
 
 
+Get-Process -Name powershell  | select -ExpandProperty Modules | format-table -Wrap
+
 ____________________________________________________________________________________
 scheduled tasks 
 ------------------------------------------------------
