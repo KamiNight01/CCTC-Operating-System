@@ -88,7 +88,8 @@ man  hier
   
   /var  --- thing' that are likely to change mostly logs
   
-  /boot   --- holds the bootprocess, read  during bot process.
+  /boot   --- holds the boot
+  ess, read  during bot process.
   
   
   /dev -- has all the strign cuh as strin/strout/trerr
@@ -569,7 +570,7 @@ perform system-wide maintenance tasks (Cleaning out /tmp or rotating logs)
 controlled by /etc/crontab
 User cron jobs
 Use 'crontab’ command to create user cron jobs
-stored in /var/spool/cron/crontabs/
+stored in /var/spool/cron/
 `crontab -u [user] file’ - sets users crontab file to the contents of listed file
 ‘crontab -l -u [user]’ - Displays user’s crontab contents
 ‘crontab -r -u [user]’ - Removes user’s crontab contents
