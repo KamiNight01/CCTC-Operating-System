@@ -552,6 +552,14 @@ Cron Jobs:
 /var/spool/cron      ----- user cron jons 
 
 
+
+crontab 
+-e edits 
+-l lists jobs 
+-l -u lists other users jobs 
+-e -u  edits other users jobs
+
+
 cron daemon checks the directories /var/spool/cron, /etc/cron.d and the file /etc/crontab,
 once a minute and executes any commands specified that match the time.
 Two types of cron jobs
@@ -577,6 +585,32 @@ crontab jobs run with the permissions of the owner of the crontab file
 
 
 --------------------------------------------------------------------------------------------
+PROC Directory 
+
+la /proc ---- holds all the process ids
+
+lsof  it's lists all the open files for the processes on the system.
+
+sudo lsof -p  <sshd pid>
+
+sudo lsof -p 10161 -c sshd
+
+----------------------
+ list unit
+ 
+sudo systemctl list-units --all
+
+sudo systemctl list-units --all --type service
+
+----------------------------------------
+
+ socket -made of a socket and a port 
+
+
+if something is happening regularly and you cant find it in cronjobs then check the timer file which can be attached to it 
+sudo systemctl list-units --all --type timer      -------to see the one it's using so check anacron.timer
+
+
 
 
 
