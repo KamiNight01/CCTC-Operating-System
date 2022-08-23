@@ -426,5 +426,57 @@ auto runs
 What Sysinternals tool can be used to investigate network connection attempts?
 ans- tcpview
 
+___________________________________________________________________________________________________________________________________________________________
+day 8
+linux process validity 
+___________________________________________________________________________________________________________________________________________________________
+process - a running list of current process 
+
+ps-elf     ( everything , long listing and format)
+gives you a snapshot of the current running process 
+
+here are two primary processes after startup:
+
+For kernel-space processes [kthreadd] ( PID = 2 )
+
+For user-space processes /sbin/init ( PID = 1 )
+
+All kernel processes are fork()ed from [kthreadd] and all user processes are fork()ed from /sbin/init or direct ancestor.
+
+Kernel processes are typically used to manage hardware, are directly handled by the kernel,have their own memory space, and have a high priority.
+
+They can be identified by the name enclosed in square brackets [] (using the -f option with ps). kthreadd spawned processes will have a PPID of 2.
+
+The kernel starts /sbin/init which is the parent/grandparent of all user processes.
+
+ if a process is [bracketed] it's forked from the kthreaded process with a pid of 2.
+ 
+ 
+ps -Nlf --ppid 2
+gives you everything that does not have a parent pid of 2.
+
+ps -elf --forest
+shows you how the command ran and also what order it was executed from.  in tree branching format
+ 
+ ps -Nlf --ppid 2 --forest | grep  -B 8 ps      (-B or -A gives you the specific amount that you want before or after the string was found)
+  ps -Nlf --ppid 2 --forest | grep --context=8 ps   this one gives you 8 lines above and 8 lines below 
+  
+
+top    (htop  is a better option)
+gives you the running processs  (dynamic)
+f to add new field , 
+shift + v gives you a heirarchical view of the running processes.
+
+htop - active running process 
+press f5 to get it as tree view 
+f2 to setup that allows  you to customze and add more options 
+
+Kernel Space vs user space 
+The kernel processes run in its own memory space. User processes run in a separate memory space. Code running in kernel mode has unrestricted access
+to the processor and main memory. This is a powerful but dangerous privilege that allows a kernel process to easily crash the entire system. 
+The area that only the kernel can access is called kernel space.User mode, in comparison, restricts access to a (usually quite small) 
+subset of memory and safe CPU operations. User space refers to the parts of main memory that the user processes can access. 
+If a process makes a mistake and crashes, the consequences are limited and can be cleaned up by the kernel. This means that if your web browser crashes,
+it won’t take down the system
 
 
