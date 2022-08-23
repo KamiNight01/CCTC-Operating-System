@@ -1,0 +1,19 @@
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+1.Identify the file mapped to the fourth file descriptor (handle) of the cron process.
+HINT: There might be multiple cron processes, but only one with the answer.
+Flag format: /absolute/path
+
+sudo lsof -c cron
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Examine the process list to find the ssh process. Then, identify the symbolic link to the absolute path for its executable in the /proc directory.
+
+The flag is the absolute path to the symbolic link, and the file it is linked to.
+
+Flag format: /absolute/path,/absolute/path
+
+ ps -elf | grep ssh
+ sudo ls -lisa /proc/1592
+
+________________________________________________________________________________________________________________________________________________
