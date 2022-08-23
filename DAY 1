@@ -460,8 +460,9 @@ shows you how the command ran and also what order it was executed from.  in tree
  
  ps -Nlf --ppid 2 --forest | grep  -B 8 ps      (-B or -A gives you the specific amount that you want before or after the string was found)
   ps -Nlf --ppid 2 --forest | grep --context=8 ps   this one gives you 8 lines above and 8 lines below 
-  
 
+
+----------------------------------------------------------------------------------------------------------------------
 top    (htop  is a better option)
 gives you the running processs  (dynamic)
 f to add new field , 
@@ -470,7 +471,7 @@ shift + v gives you a heirarchical view of the running processes.
 htop - active running process 
 press f5 to get it as tree view 
 f2 to setup that allows  you to customze and add more options 
-
+----------------------------------------------------------------------------------------------------------------------
 Kernel Space vs user space 
 The kernel processes run in its own memory space. User processes run in a separate memory space. Code running in kernel mode has unrestricted access
 to the processor and main memory. This is a powerful but dangerous privilege that allows a kernel process to easily crash the entire system. 
@@ -478,5 +479,108 @@ The area that only the kernel can access is called kernel space.User mode, in co
 subset of memory and safe CPU operations. User space refers to the parts of main memory that the user processes can access. 
 If a process makes a mistake and crashes, the consequences are limited and can be cleaned up by the kernel. This means that if your web browser crashes,
 it won’t take down the system
+
+---------------------------------------
+system calls
+----------------------------------------
+A system call is an interaction between a process and the kernel.
+Two system calls, fork() and exec(), are important to understanding how processes startup:
+fork() When a process calls fork(), the kernel creates a nearly identical copy of the process.
+exec() When a process calls exec(program), the kernel starts program, replacing the current process.
+
+
+
+---------------------------------------------------------------
+every daemon is a orphan but not every orphan is a daemon  
+---------------------------------------------------------------
+ORPAHN:
+Orphan - Parent process exited, adopted by sbin/init with PPID of 1.
+All daemons are orphans
+disown -a && exit # Close a shell/terminal and force all children to be adopted
+ init or systemd  adopts all orphan process with  an ppid of 1 
+ 
+ ZOMBIE:
+  Z in state field 
+ ZOmbie is a process that compreted it's process bit never got the terminate signal from the ppid.
+ Zombie (defunct) - completed process, but still has an entry in the process table, waiting on parent to acknowledge or terminate.
+Zombie can’t be terminated with kill since it has already finished execution, unless the parent process that spawned it is killed.
+Do not use resources, but do take up an entry of the process table which is a finite resource.
+
+------------------------------------------------------------------------------------------------------------- 
+DAEMONS:
+Program that runs as a background process (Ex. syslogd, sshd, cron)
+All daemons are Orphans, but all orphans are not Daemons
+A daemons purpose is to manage/monitor a service: {status, start, restart}
+‘man cron’ - to see an example of a daemon that starts during the boot process
+Persistence - Daemons are service that should run for duration of system operation, since init is parent, would require shutdown for parent to die.
+Malicious processes are sometimes orphaned and named to make it look like a daemon process ‘ps --ppid 1 -lf’
+---------------------------------------------------------------------
+JOBS :
+
+‘jobs’ - Display List of Jobs running in the background
+‘fg’ or ‘bg’ - Push / Pull jobs to / from the foreground / background
+‘kill %<job number>’ - Terminate the process by job number
+‘[ctrl -z]’ or ‘kill -19’ - stop / suspend the job
+‘kill -9 <PID>’ or ‘pkill -9 <process name>’
+Stop Process = SIGSTOP(19) (pause signal, let’s you continue later, does not kill process)
+End Process = SIGTERM(15) (termination signal, the right way, the application can intercept this signal and initiate shutdown tasks such as temp file cleanup)
+Kill Process = SIGKILL(9) (kill signal, extreme, only use if SIGTERM doesn’t work, won’t initiate shutdown tasks)
+
+list of all kill signals 
+Kill -l 
+1) SIGHUP       2) SIGINT       3) SIGQUIT      4) SIGILL       5) SIGTRAP     
+ 6) SIGABRT      7) SIGBUS       8) SIGFPE       9) SIGKILL     10) SIGUSR1     
+11) SIGSEGV     12) SIGUSR2     13) SIGPIPE     14) SIGALRM     15) SIGTERM     
+16) SIGSTKFLT   17) SIGCHLD     18) SIGCONT     19) SIGSTOP     20) SIGTSTP     
+21) SIGTTIN     22) SIGTTOU     23) SIGURG      24) SIGXCPU     25) SIGXFSZ     
+26) SIGVTALRM   27) SIGPROF     28) SIGWINCH    29) SIGIO       30) SIGPWR      
+31) SIGSYS      34) SIGRTMIN    35) SIGRTMIN+1  36) SIGRTMIN+2  37) SIGRTMIN+3  
+38) SIGRTMIN+4  39) SIGRTMIN+5  40) SIGRTMIN+6  41) SIGRTMIN+7  42) SIGRTMIN+8  
+43) SIGRTMIN+9  44) SIGRTMIN+10 45) SIGRTMIN+11 46) SIGRTMIN+12 47) SIGRTMIN+13 
+48) SIGRTMIN+14 49) SIGRTMIN+15 50) SIGRTMAX-14 51) SIGRTMAX-13 52) SIGRTMAX-12 
+53) SIGRTMAX-11 54) SIGRTMAX-10 55) SIGRTMAX-9  56) SIGRTMAX-8  57) SIGRTMAX-7  
+58) SIGRTMAX-6  59) SIGRTMAX-5  60) SIGRTMAX-4  61) SIGRTMAX-3  62) SIGRTMAX-2  
+63) SIGRTMAX-1  64) SIGRTMAX
+
+
+--------------------------------------------------------------------------------------------------------------------------------------
+Cron Jobs:
+ locations:    
+ /etc/crontab
+ /etc/cron.d        ---- system cron jobs 
+
+/var/spool/cron      ----- user cron jons 
+
+
+cron daemon checks the directories /var/spool/cron, /etc/cron.d and the file /etc/crontab,
+once a minute and executes any commands specified that match the time.
+Two types of cron jobs
+System cron jobs
+run as root and rigidly scheduled
+perform system-wide maintenance tasks (Cleaning out /tmp or rotating logs)
+controlled by /etc/crontab
+User cron jobs
+Use 'crontab’ command to create user cron jobs
+stored in /var/spool/cron/crontabs/
+`crontab -u [user] file’ - sets users crontab file to the contents of listed file
+‘crontab -l -u [user]’ - Displays user’s crontab contents
+‘crontab -r -u [user]’ - Removes user’s crontab contents
+‘crontab -e -u [user]’ - edits user’s crontab contents
+crontab jobs run with the permissions of the owner of the crontab file
+* * * * * /directory/and/command
+| | | | |
+| | | | +---- Day of the Week   (range: 0-7, 1 = Monday)
+| | | +------ Month of the Year (range: 1-12)
+| | +-------- Day of the Month  (range: 1-31)
+| +---------- Hour              (range: 0-23)
++------------ Minute            (range: 0-59)
+
+
+--------------------------------------------------------------------------------------------
+
+
+
+
+
 
 
