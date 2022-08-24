@@ -42,4 +42,12 @@ What is the creation time of the questionable file in the prefetch folder?
 Flag format: mm/dd/yyyy
 
 gci -Path 'C:\Windows\Prefetch' -ErrorAction Continue  |select FullName, LastAccessTime , CreationTime 
-------------------
+-----------------------------------------------------------------------
+
+Check event logs for a flag string.
+Machine: file-server
+
+get-EventLog -LogName System -Message "*flag*" | ft -wrap   
+
+
+
