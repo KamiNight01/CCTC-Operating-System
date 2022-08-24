@@ -672,6 +672,9 @@ gci 'C:\$RECYCLE.BIN' -Recurse -Verbose -Force | select *
 gci 'C:\$RECYCLE.BIN' -Recurse -Force
 	
 	
+	$I  ---- original filename
+	$R--- actual recycled content
+	
 	 Get-ChildItem 'C:\$recycle.Bin' -Force -Recurse | ForEach-Object { if (($_.Extension) -like ".txt") {if ($_.Name -like "`$R*") {Write-Host $_.Name -NoNewline ; Write-Host " --> " -ForegroundColor Green -NoNewline
 >> ; Get-Content $_.FullName } } }
 	
@@ -735,11 +738,12 @@ WINDOWS AUDITING
 BROWSER ARTIFACTS
 Stores details for each user account.
 
-History will record the access to the file on the website that was accessed via a link.
-.\
+History will record the access to the file on the website that was accessed via a link
+
+.\strings.exe 'C:\Users\*\AppData\Local\Google\Chrome\User Data\Default\History'
 
 Find FQDNs in Sqlite Text Files
-$History = (Get-Content 'C:\users\<username>\AppData\Local\Google\Chrome\User Data\Default\History') -replace "[^a-zA-Z0-9\.\:\/]",""
+$History = (Get-Content 'C:\users\student\AppData\Local\Google\Chrome\User Data\Default\History') -replace "[^a-zA-Z0-9\.\:\/]",""
 $History| Select-String -Pattern "(https|http):\/\/[a-zA-Z_0-9]+\.\w+[\.]?\w+" -AllMatches|foreach {$_.Matches.Groups[0].Value}| ft
 ----------------------------------------------------------------------------------------------------------------------------------------------------
 ______________________________________________________________________________________________________________________________________________________
