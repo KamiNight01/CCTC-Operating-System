@@ -17,3 +17,29 @@ Flag format: /absolute/path,/absolute/path
  sudo ls -lisa /proc/1592
 
 ________________________________________________________________________________________________________________________________________________
+Find the questionable website that the user browsed to (using Chrome), that appears to be malicious.
+
+$History = (Get-Content 'C:\users\student\AppData\Local\Google\Chrome\User Data\Default\History') -replace "[^a-zA-Z0-9\.\:\/]",""
+$History| Select-String -Pattern "(https|http):\/\/[a-zA-Z_0-9]+\.\w+[\.]?\w+" -AllMatches|foreach {$_.Matches.Groups[0].Value}| ft
+
+https://www.exploitdb.com
+https://www.exploitdb.com
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+There is a file that was recently opened that may contain PII.
+Get the flag from the contents of the file.
+Hint: We're not interested in numbers.
+
+Get-Item "REGISTRY::HKEY_USERS\*\Software\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs\.txt" | select -Expand property | ForEach-Object { [System.Text.Encoding]::Default.GetString
+((Get-ItemProperty -Path "REGISTRY::HKEY_USERS\*\Software\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs\.txt" -Name $_).$_)}
+
+
+
+------------------------------------------------------------------------
+
+What is the creation time of the questionable file in the prefetch folder?
+Flag format: mm/dd/yyyy
+
+gci -Path 'C:\Windows\Prefetch' -ErrorAction Continue  |select FullName, LastAccessTime , CreationTime 
+------------------
