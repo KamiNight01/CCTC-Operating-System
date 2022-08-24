@@ -662,7 +662,7 @@ Get-Itemproperty 'HKLM:\SYSTEM\CurrentControlSet\Services\bam\state\UserSettings
 		|									|
 	user account that ran it 					the file path (does not contain C:\)
 	
-if you see C:\ in bam then it's A HUGEEEE RED FLAG
+if you see C:\ in bam then it's A HUGEEEE RED FLAG like worse than the last relationship bro ... investigation time
 
 ------------------------------------------------------------------------------------------------------------------------------------
 RECYCLE BIN
@@ -675,3 +675,181 @@ gci 'C:\$RECYCLE.BIN' -Recurse -Force
 	 Get-ChildItem 'C:\$recycle.Bin' -Force -Recurse | ForEach-Object { if (($_.Extension) -like ".txt") {if ($_.Name -like "`$R*") {Write-Host $_.Name -NoNewline ; Write-Host " --> " -ForegroundColor Green -NoNewline
 >> ; Get-Content $_.FullName } } }
 	
+	
+	
+	
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+PREFETCH
+
+Set-Location C:\Windows\Prefetch\
+
+Prefetch files are created by the windows operating system when an application is run from a specific location for the first time.
+prefectch allows you go grab the actual binaru of the malicious code that was eecuted 
+ 
+gci | select -First 5
+gci -Path 'C:\Windows\Prefetch' -ErrorAction Continue | select * | select -first 5
+prefetch ends with .pf 
+super fetch is ended with .db
+prefetch files store only the last 128 execution. 
+disabled by default on servers because it's pointless in  enumeration for host interrogation.
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+JUMPLIST
+
+only stored in active user's profle
+ allows you to view that files were recently \frequently accessed
+The Windows 7-10 taskbar (Jump List) is engineered to allow users to “jump” or access items they have frequently or recently used quickly and easily.
+
+
+gci -Recurse C:\Users\*\AppData\Roaming\Microsoft\Windows\Recent -ErrorAction Continue | select FullName, LastAccessTime, creationtime
+gc " C:\Users\student\AppData\Roaming\Microsoft\Windows\Recent\legit_script.lnk"  (to see the actual content afterward to see f you can get any info)
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+RECENT FILES
+Registry Key that will track the last files and folders opened and is used to populate data in “Recent” menus of the Start menu.
+Overall key will track the overall order of the last 150 files or folders opened.
+
+List Files in Recent Docs
+gci 'REGISTRY::HKEY_USERS\*\Software\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs'
+
+Convert File Hex to Unicode
+[System.Text.Encoding]::Unicode.GetString((gp "REGISTRY::HKEY_USERS\*\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs\.txt")."0")
+[System.Text.Encoding]::Unicode.GetString((gp "REGISTRY::HKEY_USERS\*\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs\.*")."4")  
+(change the 4 value to all the options from previous command )
+
+
+Convert all of a users values from HEX to Unicode
+Get-Item "REGISTRY::HKEY_USERS\*\Software\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs\.txt" | select -Expand property | ForEach-Object { [System.Text.Encoding]::Default.GetString((Get-ItemProperty -Path "REGISTRY::HKEY_USERS\*\Software\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs\.txt" -Name $_).$_)}
+
+BROWSER ARTIFACTS
+Stores details for each user account.
+History will record the access to the file on the website that was accessed via a link.
+.\strings.exe 'C:\Users\<username>\AppData\Local\Google\Chrome\User Data\Default\History'
+Find FQDNs in Sqlite Text Files
+$History = (Get-Content 'C:\users\<username>\AppData\Local\Google\Chrome\User Data\Default\History') -replace "[^a-zA-Z0-9\.\:\/]",""
+$History| Select-String -Pattern "(https|http):\/\/[a-zA-Z_0-9]+\.\w+[\.]?\w+" -AllMatches|foreach {$_.Matches.Groups[0].Value}| ft
+WINDOWS AUDITING
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+BROWSER ARTIFACTS
+Stores details for each user account.
+
+History will record the access to the file on the website that was accessed via a link.
+.\
+
+Find FQDNs in Sqlite Text Files
+$History = (Get-Content 'C:\users\<username>\AppData\Local\Google\Chrome\User Data\Default\History') -replace "[^a-zA-Z0-9\.\:\/]",""
+$History| Select-String -Pattern "(https|http):\/\/[a-zA-Z_0-9]+\.\w+[\.]?\w+" -AllMatches|foreach {$_.Matches.Groups[0].Value}| ft
+----------------------------------------------------------------------------------------------------------------------------------------------------
+______________________________________________________________________________________________________________________________________________________
+
+
+AUDITING
+
+FIGURE AUDIT POLICY
+View entire auditpol list
+auditpol /get /category:*
+
+Set File SYstem subcategory to audit
+auditpol /set /subcategory:"File System"
+
+Remove File System subcategory auditing
+auditpol /set /subcategory:"File System" /success:disable
+
+To list the global object access auditing entries set on files or folders:
+auditpol /resourceSACL /type:File /view
+
+To list the global object access auditing entries set on Registry Keys
+auditpol /resourceSACL /type:Key /view
+
+
+WINDOWS EVENT LOGS  - types of logs 
+APPLICATION 
+SECURITY 
+SYSTEM
+CUSTOMLOG
+
+
+ ways to look at event logs are - 
+ Eventviewer
+ windows event logs ( GUI)
+ 
+  get-Eventlog -logname *                   --------- get's all the log type 
+  
+  Get-EventLog -LogName Security -Message "*remote*" | ft -wrap     - get's all logs from security that have the word remote in it 
+  -----------------------------------------------------------------------------
+  VIEW/ ANALYZE EVENT LOGS - CLI
+show all logs
+wevtutil el
+
+get log info
+wevtutil gli security
+
+get last 3 events
+wevtutil qe security /c:3 /f:text
+  
+ View newest 10 System Logs
+Get-EventLog -LogName System -Newest 10
+
+View the entire message field in the Security Log
+Get-Eventlog -LogName Security | ft -wrap
+
+Search logs with mutiple criteria
+get-winevent -FilterHashtable @{logname="security";id="4624"} | select -first 5 | ft -wrap
+  
+---------------------------------------------------------------------------------
+POWERSHELL LOGGING 
+ 
+View newest 10 System Logs
+Get-EventLog -LogName System -Newest 10
+
+View the entire message field in the Security Log
+Get-Eventlog -LogName Security | ft -wrap
+
+Search logs with mutiple criteria
+get-winevent -FilterHashtable @{logname="security";id="4624"} | select -first 5 | ft -wrap
+  
+  EVENT IDS TO SEARCH FOR MALICIOUS ACTORS    (threat    bad bois )
+User Added to Privileged Group
+4728, 4732, 4756
+
+Security-Enabled group Modification
+4735
+
+Successful/ Failed User Account Login
+4624, 4625
+
+POWERSHELL TRANSCRIPT
+Allows the capture of the input and output of Windows PowerShell commands into text-based transcripts.
+Start-Transcript
+
+View Powershell console History
+Get-History
+
+View entire powershell History
+Get-Content "C:\users\$env:username\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadline\ConsoleHost_history.txt"
+
+SCRIPT BLOCK LOGGING
+Logs detailed processing of commands, script blocks, functions, and scripts to the Microsoft-Windows-PowerShell/Operational event log.
+
+Logging is enabled through the Turn on PowerShell Script Block Logging Group Policy setting in
+Administrative Templates → Windows Components → Windows PowerShell
+
+Turn on script black logging via the Registry
+reg.exe add HKLM\SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging\ /v EnableScriptBlockLogging /t REG_DWORD /d 1 /f
+
+
+  
+_________________________________________________________________________________________________________________________________________________
+  
+
+
+
+
+
+
+
+
+
+
