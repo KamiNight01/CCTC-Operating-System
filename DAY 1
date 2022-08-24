@@ -612,10 +612,66 @@ if something is happening regularly and you cant find it in cronjobs then check 
 sudo systemctl list-units --all --type timer      -------to see the one it's using so check anacron.timer
 
 
+_________________________________________________________________________________________________________________________________________________________
+
+DAY 9
+Windows artifacts  auditing and logging
+________________________________________________________________________________________________________________________________________________________
 
 
+ARTIFACT: 
+UserAssist
 
 
+Many artifacts will require the operator use a Security Identifer (SID) to dig in user specific registry locations to enumerate the artifact information.
+A few ways to achieve this are provided below:
+
+get-wmiobject win32_useraccount | select name,sid (PowerShell)
+Get-LocalUser | select Name,SID (PowerShell)
+wmic useraccount get name,sid (CMD.EXE ONLY)
+    
+    ----- use this t identify all users on the device so you can see who has logged into the  box. 
+    
+    
+------------------------------------------------------
+USERASSIST:
+registry::hkey_usersThe UserAssist registry key tracks the GUI-based programs that were ran by a particular user.
+
+View executable Files run
+Get-ItemProperty 'REGISTRY::HKEY_USERS\*\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\UserAssist\{CEBFF5CD-ACE2-4F4F-9178-9926F41749EA}\Count'
 
 
+View Shortcut files executed
+get-itemproperty 'REGISTRY::HKEY_USERS\*\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Userassist\{F4E57C4B-2036-45F0-A9AB-443BCFE33D9F}\Count'
 
+
+(gives you a encoded  output  ----- use rot 13 decoder for it  (cyberchef))
+-----------------------------------------------------------------------------------
+WINDOWS BACKGROUND ACTIVITY MODERATOR (BAM)
+
+bam is enabled by default
+
+BAM is a Windows service that Controls activity of background applications.
+Get-Itemproperty 'HKLM:\SYSTEM\CurrentControlSet\Services\bam\UserSettings\*' (Windows 1709 & 1803)
+Get-Itemproperty 'HKLM:\SYSTEM\CurrentControlSet\Services\bam\state\UserSettings\*' (Windows 1809 and newer)
+ allows you to get the full file path of whatever executabl ewas ran along  with the time it was ran 
+ BAM does not have C:\ since it uses full path like 
+ S-1-5-21-3815887625-636170824-1205406010-1004                   \Device\HarddiskVolume1\Windows\System32\OpenWith.exe
+ 		^									^
+		|									|
+		|									|
+	user account that ran it 					the file path (does not contain C:\)
+	
+if you see C:\ in bam then it's A HUGEEEE RED FLAG
+
+------------------------------------------------------------------------------------------------------------------------------------
+RECYCLE BIN
+The recycle bin is a very important location on a Windows file system to understand. It can help you accomplish a forensic investigation.
+
+gci 'C:\$RECYCLE.BIN' -Recurse -Verbose -Force | select *
+gci 'C:\$RECYCLE.BIN' -Recurse -Force
+	
+	
+	 Get-ChildItem 'C:\$recycle.Bin' -Force -Recurse | ForEach-Object { if (($_.Extension) -like ".txt") {if ($_.Name -like "`$R*") {Write-Host $_.Name -NoNewline ; Write-Host " --> " -ForegroundColor Green -NoNewline
+>> ; Get-Content $_.FullName } } }
+	
