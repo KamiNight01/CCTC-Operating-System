@@ -75,11 +75,62 @@ https://stedolan.github.io/jq/manual/
 
 jq '.'  conn.log | md5sum 
 
+_____________------------------------------------------------------------------------------
+File : /home/garviel/conn.log
+This file is a conn.log made in Zeek (Bro) with data about TCP/IP connections.
+Use jq to locate and count the unique originating endpoint IP addresses in the file. Enter the number of unique originating IP addresses as the flag.
+Flag format: #
+HINT: Use this link to understand the JSON object’s attributes
+http://gauss.ececs.uc.edu/Courses/c6055/pdf/bro_log_vars.pdf
 
+jq '."id.orig_h"' conn.log |sort | uniq | wc -l
 
+----------------------------------------------------------------------------------------------------------------------------------
+File: /home/garviel/output.xml
+Parse all of the IP addresses from the file using XPATH queries
+https://www.w3schools.com/xml/xpath_intro.asp
+HINT:
+http://xpather.com/
+http://www.whitebeam.org/library/guide/TechNotes/xpathtestbed.rhtm
+Sample Output (without piping to MD5SUM)
+ addr="XXX.xxx.xxx.xxx"
+ addr="XXX.xxx.xxx.xxx"
+ addr="XXX.xxx.xxx.xxx"
+ addr="XXX.xxx.xxx.xxx"
+ addr="XXX.xxx.xxx.xxx"
+ addr="XXX.xxx.xxx.xxx"
+--TRIMMED--
+Flag format: md5 hash of output
 
+xpath -q -e '//@addr'  output.xml  |md5sum 
 
+---------------------------------------------------------------------------------------------------------------------------------------
 
+File: /home/garviel/output.xml
+Select all of the IP addresses and ports using a single XPATH Union Statement
+Pipe the result to md5sum for the flag
+HINT:
+https://librarycarpentry.org/lc-webscraping/02-xpath/index.html
+Sample Output (without piping to MD5SUM)
+addr="xx.xxx.xx.xx"
+ addr="xx.xxx.xx.xx"
+ addr="xx.xxx.xx.xx"
+ addr="xx.xxx.xx.xx"
+ portid="xx"
+ addr="10.50.29.6"
+ addr="xx.xxx.xx.xx"
+ portid="22"
+--TRIMMED--
+
+xpath -q -e '//@addr|//@portid'  output.xml | md5sum 
+
+------------------------------------------------------------------------------------------------------------------------------------
+Use the log file attached to this for all Whut questions.
+How many unique users logged into this machine?
+
+grep "session opened" log.txt 
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
