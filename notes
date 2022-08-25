@@ -49,5 +49,50 @@ Machine: file-server
 
 get-EventLog -LogName System -Message "*flag*" | ft -wrap   
 
+-----------------------------------------------------------------------------------------------------------------
+
+File: /home/garviel/conn.log
+Use jq to pretty print the JSON file conn.log.
+Hash the pretty-printed file with md5sum for the flag.
+Sample JSON "Pretty Print" Output (without piping to MD5SUM)
 
 
+  "ts": 1615383120.585641,
+  "uid": "C9ybUDHykHdrh0h93",
+  "id.orig_h": "10.50.24.73",
+  "id.orig_p": 38156,
+  "id.resp_h": "192.168.65.20",
+  "id.resp_p": 443,
+  "proto": "tcp",
+  "duration": 2.8133392333984375e-05,
+  "orig_bytes": 0,
+  "resp_bytes": 0,
+
+HINT:
+https://jqplay.org/
+https://docs.jsonata.org/simple
+https://stedolan.github.io/jq/manual/
+
+jq '.'  conn.log | md5sum 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+------------
