@@ -135,9 +135,9 @@ grep "session opened" log.txt
 
 
 
+xpath -q -e '//@portid/ancestor::host/address/@addr | //@portid' output.xml 2>/dev/null | md5sum 
 
-
-
+# @portid = /nmaprun/host/ports/port/@portid   ||  @addr = /nmaprun/host/address/@addr 
 
 
 
