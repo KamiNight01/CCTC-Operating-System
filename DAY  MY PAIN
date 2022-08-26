@@ -996,9 +996,121 @@ ausearch - query audit logs
 
 
 __________________________________________________________________________________________________________________________________________________________
+DAY 10
+Memory Analysis
+-------------------------------------------------------------------------
+
+MEMORY
+Volatile Memory
+
+Non-persistent
+
+Requires power to maintain the stored information; it retains its contents while powered on but when the power is interrupted, the stored data is immediately lost
+
+RAM
+Non-Volatile Memory
+
+Persistent
+
+Does not require a continuous power supply to retain the data stored in a computing device
+HDD
+USB
+
+WHY IS THIS IMPORTANT?
+Data that has not been stored on disk yet is present in memory
+
+Files that have been deleted or modified can be scraped from RAM and used as evidence or for timelining an attack
+
+Examples:
+
+Bash history is written to .bash_history once the terminal session is terminated, however each command that has been ran during the current 
+terminal session resides in RAM and can be viewed using the bash plugin
+If the ~/.bash_history has been deleted, using the same method as above we can still retrieve all commands executed
+
+Logs that have been deleted or modified can be read and scraped from memory using the mfind mcat & mls plugins
+
+MEMORY ANALYSIS
+Analyzing a system’s RAM to determine information about running programs, the operating system, and the overall state of a computer
 
 
- 
+ ORDER OF VOLATILITY - THE HALFLIFE OF DATA
+CPU registers, cache
+
+Routing table, ARP cache, process table, kernel stats, memory
+Temporary file systems
+Disk  
+Remote logging and monitoring data
+Physical configuration, network topology
+Archival media - backups
+
+VOLITILITY:
+Memory Analysis framework
+
+.\volatility_2.6_win64_standalone.exe -f ".\cridex.vmem" imageinfo     ----- you can specify  as many plugins as you want after you specify the file.
+
+Volatility provides cross-platform solutions on Windows, Mac OSX, and Lin
+Each operating system has its own memory acquisition tool called Persistent Memory (pmem)
+
+Linpmem
+
+Winpmem
+
+OSXpmem
+
+
+
+.\volatility_2.6_win64_standalone.exe -f ".\cridex.vmem" --profile=WinXPSP2x86 procdump -p 1640 -D .     (-p for port and -D for  direcotry to look at ) 
+
+Volatility Foundation Volatility Framework 2.6
+Process(V) ImageBase  Name                 Result
+---------- ---------- -------------------- ------
+0x81e7bda0 0x00400000 reader_sl.exe        OK: executable.1640.exe
+
+.\volatility_2.6_win64_standalone.exe -f ".\cridex.vmem" --profile=WinXPSP2x86 memdump -p 1640 -D . - memdump to get a memory dump to see what it was doing 
+	
+	
+to mount sysinternals do 
+ net use * \\live.sysinternals.com\tools
+
+
+to call use specificly the drive it was mounted to 
+	
+z:\strings.exe -accepteula "1640.dmp" > 1640.txt
+
+
+.\volatility_2.6_win64_standalone.exe -f ".\cridex.vmem" --profile=WinXPSP2x86 connections 
+
+---- checks for connections 
+( can  also use notepad++ and use regex to  find ip) 
+
+.\volatility_2.6_win64_standalone.exe -f ".\cridex.vmem" --profile=WinXPSP2x86 connscan
+ ---- gives you active and recently closed tcp connection.
+
+psscan gives you the physical location of the memory addresses.
+to see all what dll an executable is using you can do dlllist
+dlldump to grab the dll 
+hivedump --- dump hive
+hivelist ---- list all your hives
+dumpregistry ------ dumps it all ( crazy mfers)
+.\volatility_2.6_win64_standalone.exe -h to get help on all the different options for plugins
+-------------------------------------------------------------------------------------------------------------------------------------------------'
+
+VOLATILITY INSTALLATION
+Installing the Python version of Volatility
+Download python < 3.0
+Click "Add python to path"
+Download Volatility from git
+Run install: setup.py install
+
+INSTALLATION CONT.
+Some dependencies are missing. Need to install:
+diStorm3
+click "distorm3-3.3.4.win-amd64.exe"
+Visual C++ Compiler
+pyCrypto or python -m pip install pycrypto
+Yara for python 2.7
+openpyxl: python -m pip install openpyxl
+ujson: python -m pip install ujson
 
 
 
