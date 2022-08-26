@@ -140,6 +140,21 @@ xpath -q -e '//@portid/ancestor::host/address/@addr | //@portid' output.xml 2>/d
 # @portid = /nmaprun/host/ports/port/@portid   ||  @addr = /nmaprun/host/address/@addr 
 
 
+------------------------------------------------------------------------------------------------------------------------------------
+Scenario: Analysts have found a dump of commands on the Internet that refer to the Terra machine. The command history for one of the users with an interactive login is being stolen via unknown means. The network analysts can’t find any persistent connections, but notice a spike in traffic on logon and logoff.
+
+Task: Identify how the command history is stolen from the machine.
+
+The flag is the file used to execute the commands, and where they are sent.
+
+Flag format: /absolute/path/to/file,IP:port
+
+Machine: Terra
+
+cat /etc/passwd | grep bin/bash
+ ls -lisa
+ cat .bash_logout
+
 
 
 
