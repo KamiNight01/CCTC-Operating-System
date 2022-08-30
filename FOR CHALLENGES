@@ -1,0 +1,35 @@
+public: 10.50.36.88      stack private ip: xx.7.xx.xx  LCpl Fabian
+
+
+OS Public Repository
+
+    https://os.cybbh.io/public/os/latest/index.html
+
+OS CTFd Server
+
+    http://10.50.22.25:8000/
+    thfa-M-006
+
+RDP from in-class network
+
+    xfreerdp /u:<username> /v:<IP_Address> /dynamic-resolution +glyph-cache +clipboard
+
+RDP from Windows Ops Station/Windows PC
+
+    mstsc.exe /v:<IP_Address> /admin /fullscreen
+
+                         -OR-
+
+    Utilize 'Remote Desktop Connection' GUI
+
+SSH from in-class network
+
+    ssh -X <username>@<IP_Address>
+
+SCP from local to remote
+
+    scp <file_location> <username_of_remote>@<IP_Address_of_Remote>:<full_path_to_destination>
+
+SCP from remote to local
+
+    scp <username_of_remote>@<IP_Address_of_Remote>:<full_path_to_location> <file_destination> 
