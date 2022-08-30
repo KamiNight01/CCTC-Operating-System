@@ -156,7 +156,8 @@ cat /etc/passwd | grep bin/bash
  cat .bash_logout
 -----------------------------------------------------------------------------------------------------------------------------------------
 
-
+What PowerShell command will list domain groups?
+get-Adgroup
 
 
 
