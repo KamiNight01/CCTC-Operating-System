@@ -159,7 +159,9 @@ cat /etc/passwd | grep bin/bash
 What PowerShell command will list domain groups?
 get-Adgroup
 
+----------------------------------------------------------------------
+Find the unprofessional email addresses. List the email's domain.?
 
+Get-ADUser -Filter * -Properties * | where {$_.mail -notlike "*mil@mail.mil*" } | select name, mail
 
-
-------------
+--------------------------------------------------------------------------------------------------------------------------------------------------------
