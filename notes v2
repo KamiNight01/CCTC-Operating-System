@@ -261,6 +261,427 @@ Turn on script black logging via the Registry
 reg.exe add HKLM\SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging\ /v EnableScriptBlockLogging /t REG_DWORD /d 1 /f
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
+SSH_CONFIG:
+##SETUP FOR SUCCESS##
+Ctrl Alt T #Opens a terminal in my home directory
+#Creating one word commands to connect to IP addresses#
+
+vim .ssh/config
+HostName Linops
+    Host 10.50.34.188
+    User student
+    Port 22
+    
+chmod 600 .ssh/config
+ssh-keygen #press enter all the way until prompt
+ssh-copy-id Linops
+cat.bashrc #look at Alias definitions#
+
+vim .bash_aliases
+alias sshops='ssh Linops -X terminator&'
+
+source .bashrc
+sshops
+#success terminator launches#
+
+
+--------------------------------------------------------------------------------------------------------------
+POWERSHELL REFRESER:
+#BASIC REFRESHER
+get-command
+get-help
+argument #something passed through a command
+method #something you can do to an object
+property #something that describes an object
+pipeline #outputs one command to another
+cimclass #object oriented abstraction of the entity being managed through a CIMOM infrastructure like WMI but open sourced versions
+#group of like objects that pull information directly from the kernel
+get-ciminstance
+get-cimclass
+win32_
+a | into system means it has been compromised
+wmiprocess to see the malicious name to a process
+
+--------------------------------------------------------------------------------------------------------------------------------------
+#PROFILES
+$profile can provide means of persistence 
+PS_Profile-Checker.ps1
+$profile gives you by default current user; current host
+$profile.allusersallhosts
+profile loads upon execution of powershell
+&$profile.allusersallhosts #run this command to reload profile to update it
+start powershell -noprofile #starts powershell with no profile
+start powershell -windowstyle hidden #IS A RED FLAG
+start powershell -version 2 #choose your powershell version #version 2 has 0 logs between start and stop
+start-transcript -path .\day1_notes.txt 
+stop-transcript #all commands and information were stored into a transcript .txt file in the specified drive
+
+---------------------------------------------------------------------------------------------------------------------------------------
+#REMOTE SESSIONS
+Windows PowerShell remoting
+win rm turned off by default #needs to be turned on 
+webservices management (wsman) #needs to be turned on
+have to be in admin users or remote management group 
+get-pssessionconfiguration #tells us who can remote management
+NT Authority is kernel
+get-service winRM  #to see if it is running. #start-service WinRM to turn it on (its a dependency)
+get-item WSMAN:\localhost\client\trustedhosts | select -expandproperty value #queries for trusted hsots
+set-item WSMAN:\localhost\client\trustedhosts -value  "10.2.0.8,notchyna.ch,URL" -concatenate #appends to trusted hosts. concatenate prevents overwriting
+Invoke-command -computername pwnd_host { restart-computer -force } -AsJob #this is a temporary commands to run remote commands per one session
+receive-job 1 #pull it to the forground
+Invoke-command -computername workstation3,server4,webserver5 C:\windows\findevil.ps1
+new-pssession -computername #this is equivalant to ssh'ing onto a remote device
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+MEMMORY ANALYSIS:
+Volatile Memory
+  Non-persistent
+  Requires power to maintain the stored information; it retains its contents while powered on but when the power is interrupted, the stored data is immediately lost    
+    RAM
+        
+        
+
+Non-Volatile Memory
+  Persistent
+  Does not require a continuous power supply to retain the data stored in a computing device
+    HDD
+    USB
+    
+~/.bash_history #bash history is written here once the terminal session is terminated, however each command resides in ram during the current session and can be viewed using the bash plugin
+mfind, mcat, mls #logs that have been deleted can be read and scraped from memory with plugins
+
+memory analysis #analyze a systems ram to determine information
+
+
+Why is this important?
+
+    Data that has not been stored on disk yet is present in memory
+
+    Files that have been deleted or modified can be scraped from RAM and used as evidence or for timelining an attack
+
+        Examples:
+
+            Bash history is written to .bash_history once the terminal session is terminated, however each command that has been ran during the current terminal session resides in RAM and can be viewed using the bash plugin
+
+            If the ~/.bash_history has been deleted, using the same method as above we can still retrieve all commands executed
+
+            Logs that have been deleted or modified can be read and scraped from memory using the mfind mcat & mls plugins
+
+Memory Analysis
+
+    Analyzing a system’s RAM to determine information about running programs, the operating system, and the overall state of a computer
+
+Order of Volatility - the halflife of data
+    CPU registers, cache
+    Routing table, ARP cache, process table, kernel stats, memory
+    Temporary file systems
+    Disk
+    Remote logging and monitoring data
+    Physical configuration, network topology
+    Archival media - backups
+
+Volatility Program 
+Each operating system has its own memory acquisition tool called Persistent Memory (pmem)
+    Linpmem
+    Winpmem
+    OSXpmem
+.\volatility_2.6_win64_standalone -h
+.\volatility_2.6_win64_standalone -f ".\cridex.vmem" imageinfo
+.\volatility_2.6_win64_standalone -f ".\cridex.vmem" --profile=WinXPSP2x86 pslist 
+.\volatility_2.6_win64_standalone -f ".\cridex.vmem" --profile=WinXPSP2x86 pstree
+.\volatility_2.6_win64_standalone -f ".\cridex.vmem" --profile=WinXPSP2x86 procdump -p 1640(process id) -D .(means this folder im in)
+gci
+get-filehash .\executable.1640.exe
+virustotal.com
+.\volatility_2.6_win64_standalone -f ".\cridex.vmem" --profile=WinXPSP2x86 memdump -p 1640 -D .
+net use * \\live.sysinternals.com\tools
+z:\strings.exe -accepteula "1640.dmp" > 1640.txt
+gci
+open new file in notepad ++
+search for IP addresses ^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$ 
+.\volatility_2.6_win64_standalone -f ".\cridex.vmem" --profile=WinXPSP2x86 connections
+.\volatility_2.6_win64_standalone -f ".\cridex.vmem" --profile=WinXPSP2x86 connscan
+iplocation.net
+
+ctfd plugins
+process: pslist, pstree, psscan
+dlls: dlllist, dlldump,
+Network Artifacts: connections, connscan
+Registry Analysis: Hivedump, Hivelist, dumpregistry
+
+find string or select string
+----------------------------------------------------------------------------------------
+LINUX VALIDITY:
+All kernel process are forked form Kthread. These processes are used to manage hardware
+ps -Nlf --ppid 2 --forest | grep --context=#(provides before and after) -B(before) or -A(after) 8 (certain number of lines) ps #means anything with a parent id of 2 
+ps -Nlf --ppid 2 --forest
+top #dynamic proccess list, press F to select fields to display, shift v sorts in order
+htop #another version of top with more information, f2 for fields display information
+kernel-space processes [kthreadd] (PID 2)
+user-space processes /sbin/init (PID 1)
+### System Calls ###
+fork() to run a copy of itself, exec() start a program replacing current process exec(program)
+a capital clone of a process means there is a cronjob running
+/usr/sbin/cron
+  /usr/sbin/CRON
+####
+disown -a && exit #close a shell/terminal and force all children to be adopted
+malicious processes are sometimes orphane and named to make it look like a daemon process "ps --ppid 1 -lf" finds all the child processes for SysV Init
+"man cron" to see an example of a daemon that starts during the boot process
+jobs #display list of jobs running in background
+kill %<job number> - terminate process by job number
+ctrl -z or kill -19 to stop / suspend the job
+kill -9 <pid> or pkill -9 <process name>
+kill -l #shows all kills you can send
+defunct / zombie is Z
+### Cron Jobs ### 
+Scheduled tasks
+#system cron jobs # run as rooat and rigidly scheduled, controlled by '/etc/crontab', perform system wide mainenence tasks (cleaning out /tmp or rotating logs
+/etc/crontab, /var/spool/cron, /etc/cron.d
+#user cron jobs # 'crontab' command to create user cron jobs
+stored in /var/spool/cron/crontabs/
+crontab -e #to edit my cronjobs
+crontab -l #to list my cronjobs
+sudo contab -e -u #to edit other users cronjobs
+crontab -u [user] file
+crontab -l -u [user] - Dispaly users crontab contents
+crontab -r -u [user] - remove users crontab contents
+crontab -e -u [user] - edits users crontab contents
+crontabs run with the permissions of the owner of the crontab file
+###
+ls -la /proc
+ls -la /proc/<pid>
+sudo !!
+sudo lsof | tail -30 #list all open files being used by every process
+sudo lsof -c sshd #list all open files for specific process
+sudo lsof -i :123
+only worried about numbered file descriptors aka streams
+0>in 1>out 2>err
+sudo systemctl list-units --all --type service
+sudo systemctl list-units --all --type timer
+systemd has functionality called timers that can be attached to services. this can have things happening in intervals without cronjobs being scheduled
+systemctl cat anacron.timer #shows the timer for anacron service that was scheduled
+htop init
+
+netcat -lp 3389 < /tmp/NMAP_all_hosts.txt,whatischaos.timer or whatischaos.service
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+LINUX LOGGING AND AUDITING :
+#SysV#
+#Authentication LogTypes#
+tail (-n15) or cat /var/log/auth.log - Authentication related events
+last -f /var/run/utmp - Users currently logged in
+last -f /var/log/wtmp - history file for successful logins
+sudo last -f /var/log/btmp - failed login attempts
+
+#Application LogType#
+Apache - web server (dir)
+apt - package manager (dir)
+/var/log/mysql.log
+0.5 
+#System LogType#
+/var/log/messages - Legacy catch all
+/var/log/syslog - Ubuntu/Debian catch all
+dmesg = Device Messenger (queiries /proc/kmsg)
+  Kernal Ring Buffer - never fills
+  First logs generated by the system
+
+#Logging at a glance#
+location /var/log
+config file /etc/rsyslog.conf
+service /usr/sbin/rsyslogd
+
+#Logging Daemon#
+/usr/sbin/rsyslogd
+  User space daemon - read messages written to /dev/log and formats and stores them based on /etc/rsyslog.conf rules
+    syslog() via libc
+    kernal ring buffer
+    audit records via audit subsystem (auditd)
+    
+#config file#
+/etc/rsyslog.conf
+  log entries follow syslog standard facility.severity
+  facility = what program, or part of system, log is from
+  severity = urgency
+@@ means UDP, @ means tcp 
+
+#Log Enumeration/Management#
+best practices
+  meaningful naming schema
+  seperate logs logically and by precedence
+  sync time accross network
+  control loge access
+utilize cron jobs / scripts
+  log rotate
+    /etc/logrotate.conf
+    how large to let files get. how long to keep them.
+
+#Useful Logging Commands#
+tail -f -continuously show end of file
+less /var/log/syslog - view log in page viewer
+logger - send a user generated message to system log i.e. starting update
+> /var/log/messages - wipes logs
+  why do this as opposed to deleting/recreating files?
+last -f /var/log{wtmp,btmp} - needed to view data files
+
+#SYSTEMD#
+#JOURNALD#
+journalctl -e #command to see last logs
+journalctl --list-boots
+journalctl -b (bootid)
+journalctl -u ssh.service
+
+jqplay.org
+-----------------------------------------------------------------------------------------------
+LINUX REFRESERS ?ESSENTIALS :
+!!ENUMERATION PRIORITY!!
+#should transcript sessions#
+#where am i 
+hostname / uname -a
+#who am i
+whoami / id
+#what am i allowed to do
+sudo -l
+#whats going on
+w / who / ps -elf / top
+#whats that
+<         >
+#if something of interest; why is that happening#
+<                                               >
+#how is that happening#
+<                     >
+#whats in there
+pwd / ls -lisa
+#Network Enumeration
+ifconfig #deprecated ip addr or ip a #provides interfaces, status and IP address
+sudo netstat -ntlp | less#deprecated or sudo ss -ntlp | less #listening ports
+ip route or ip r or route#deprecated   
+arp#deprecated or ip neigh or ip n #shows machines the computer has talked to
+iptables -L -> sudo !!#deprecated or nft list tables
+
+
+
+/ - root
+/bin (/usr/bin, /usr/local/bin) - for binaries
+/sbin (/usr/sbin) - system binaries that require sudo
+/home - directory that is default for users home directory
+/usr - stuff used accross the entire system
+/etc - everything that is configurable
+/var - things that are likely to change such as logs
+/boot - directory that is read at boot ie configs. GRUB / boot loaders
+/dev - special device files ie. mouse, keyboard, hard-drives/partitions
+/lib - like dll's in a windows system, Functions for applications to run 
+/mnt - dedicated directory used for permanantly attached external storage
+/media - removable usb drives, cd's
+/opt - 3rd party applications
+/run - runtime and variable data. mounted at boot. holds information to that particular session 
+/tmp - temporary files
+/proc - processes
+
+/etc/passwd | grep student 
+/etc/group | grep student 
+ls - lisa /etc | less #good too look at permissions and owners
+
+SUID bit set - everytime something is executed it is run as the root to edit your own user entries
+SGID bit set - (for group) find / -perm /4000 2>/dev/null -exec ls -la {} \;
+
+man
+--help doesnt require internet access
+man -k (put in keyword)
+apropros (same thing as man -k)
+
+which
+whereis
+locate
+
+$date
+$cal - calender
+
+echo $0 - to see the current shell
+source .bashrc
+cat /etc/shells - to see all shell son the box
+
+find /home/garviel/ -type f|xargs wc -l #find files with most lines
+find / -type f -name ".*" ls -la  #find hidden files
+sudo -u name #switch user and execute file
+---------------------------------------------------------------------------------------------------------------------------------
+ALTERNATE DATA STREAM:
+$data is for alternate data streams
+command line
+dir /R #displays alternate data streams of the file 
+echo "Elden Ring doesn not deserve GOTY" > calc.fuk:truth.txt #creates an alternative datastream
+notepad calc.fuk:truth.txt
+timestomp to change times
+
+powershell
+get-item .\calc.fuk -stream *
+get-content .\calc.fuk -stream truth.txt 
+gci $pwd | ForEach-Object { get-item $_.FullName -stream * }
+gci $pwd | ForEach-Object { get-item $_.FullName -stream * | where { $_.Stream -ne ':$DATA' } }
+gci $pwd | ForEach-Object { get-item $_.FullName -stream * | where { $_.Stream -ne ':$DATA' } } | get-content
+gci -recurse C:\ -name * -force
+
+dir /Q #provides group ownerpermissions on directory
+----------------------------------------------------------------------------------------------------------------------------------------
+ACTIVE DIRECTORY: TESTABLE
+### Group Nesting ###
+  Security Flaws
+Accidently giving permissions to people in which they do not need
+
+gwmi win32_service | where { $_.name -like "adws" -or $_.name -like "kdc" -or $_.name -like "netlogon" -or $_.name -like "dns" } | select name,state,status
+
+Get-ADDomainController
+Get-ADDomain army.warriors
+get-adforest army.warriors
+get-smbshare
+
+get-module activedirectory 
+get-command -module activedirectory
+get-adgroup -filter *
+get-adgroup -filter * | select name, groupcategory, groupscope 
+get-adgroupmember -Identity "Domain Admins"
+get-adgroupmember -identity "Domain Admins" -recursive
+get-adgroupmember -identity "Domain Admins" -recursive | measure
+
+### Group Policy Object Queries ###
+
+gpresult
+get-gpresultantsetofpolicy
+
+### suspicious activity ###
+
+unknown admin accounts
+activity outside normal work hours
+nested groups
+service accounts should never to an interactive logon
+user accounts should never log into critical infrastructure (i.e. domain controller, web server)
+
+### DSTOOLS ###
+
+dsadd
+dsget
+dsmod
+dsmove
+dsquery
+
+powershell ad commands
+
+1 = yes
+0 = no
+
+new-aduser -name "bad guy" -passwordnotrequired 1 -path "OU=3RDLPT,OU=CCO,OU=3RDBN,OU=WARRIORS,DC=ARMY,DC=WARRIORS"
+### get-aduser -filter * -properties * | select -first 1 ###
+get-aduser -filter * -properties * | where { $_.AllowReversiblePasswordEncryption -eq $true } | select name
+get-aduser -filter * -properties * | where { $_.PasswordNotRequired -eq $true } | select name
+search-adaccount -AccountDisabled | select name
+search-adaccount -AccountExpired | select name
+search-adaccount -AccountExpiring | select name
+### get-aduser -filter * -properties * | where { $_.<property> -like "*<pattern_to_match>*" } | select name,<whatever property>
+(possible rot13 encoding) ###
+
+accounts being disabled and reanabled by someone is a red flag
+dont user get-localuser on a domain controller
+
+
 
 
 
