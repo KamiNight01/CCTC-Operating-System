@@ -1198,3 +1198,5 @@ Search-ADAccount -AccountExpired |select name     all expired account on the act
 ### Get-ADUser -Filter * -Properties * |where { $_.<property> -like "*<pattern to match>*" } | select name <whatever property>  
 Get-ADUser -Filter * -Properties * |where { $_.officephone -like "*1234*" } | select name,  officephone 
 Get-ADUser -Filter * -Properties * |where { $_.description -like "*Built*in*" } | select name 
+
+
