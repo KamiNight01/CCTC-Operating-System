@@ -1,0 +1,266 @@
+WINDOIWS VALIDITY :
+tasklist #view processes in windows
+tasklist | get-member #shows methods
+process's require interaction. the current execution of code running
+services require minimal to no interaction asides from start | stop | restart. Runs quiet in background
+get-process #shows other information in addition to tasklist
+taskmgr #shows processes
+dll #contains pointers to recources available for other programs to interact with
+get-ciminstance win32_process #shows all + hidden
+get-ciminstance win32_process | measure
+get-process | measure #shows proccesses count
+#get-ciminstance win32_process | select * | select processid, parentprocessid, name, commandline #best version to run
+#get-ciminstance win32_process | select * | select processid, parentprocessid, name, commandline | where { $_.name like *powershell* } #isolate to the suspicious malware
+#get-ciminstance win32_process | select * | select processid, parentprocessid, name, commandline | where { $_.processid like *PID* } | fl
+#get-ciminstance win32_process | select * | select processid, parentprocessid, name, commandline | where { $_.processid like *ParentProcess#* } | fl
+#get-ciminstance win32_process | select * | where { $_.processid -like "suspicious id from prior step" } | fl
+get-ciminstance win32_process | select * -first 1
+get-ciminstance win32_process | where -property name -like *LSASS* | select *
+get-ciminstance win32_process | where {$_.Name -like "*LSASS*"} | select *
+get-process -name lsass | select -expandproperty modules | out-file $HOME\desktop\handles.txt -width 4096 or ft -wrap #shows handles for lsass binary
+tasklist /m /fi "IMAGENAME eq lsass.exe" #another way to find handles
+get-process -name powershell | select -expandproperty modules
+sc.exe showsid power #show sid of a service
+.\get-serviceloadordergroup.ps1
+sc.exe queryex type=service state=active or inactive
+scheduled tasks is great for persistence
+schtasks.exe #to view scheduled tasks
+schtasks.exe /query /tn "<taskname>" "/Microsoft/XblGameSave/xblGameSavetask" /v /fo list
+schtasks.exe /query /tn "GoogleUpdateTaskMachineCore{24asd-f325sfd-a215a-sdf214-2af14-2134}" /v /fo list
+task scheduler #gui to see scheduled tasks
+checkout tasks that are running 
+#DO NOT EXPAND MICROSOFT#
+netstat -anob
+get-nettcpconnection #powershell version of netstat #netstat is a static snapshot
+### sysinternals ### tools for finding informaiton
+processexplorer procexp64.exe #allows suspension of process instead of killing
+autoruns64.exe #looks at what starts automatically 
+procmon64.exe -accepteula #monitoring boot process, GUI only tool
+tcpview64.exe #gives a netstatesque network listing + is dynamic"consistantly refreshes"
+google sysinternals handles # handle
+google sysinternals permissions file / effective permissions file  #accesscheck
+### User Access Controls ### GUI only service
+limits privileges of user run applications
+registry key located at "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+----------------------------------------------------------------------------------------------------------------------------------------------------
+WINDOWS REGISTRY:
+Windows Registry is like a file system hard drive. REGEDIT to view.
+Hive keys (HKEY_) seperate everything as if they were directorys. Soul purpose is to group items. Holds keys.
+Keys are like subdirectories
+Registry value(entry) are individual settings within the key. Data for values.
+everything is logged in the registry.
+HKEY Classes Root (HKR) #contains file extensions. Is a symbolic link that is under HKLM\Software\
+HKEY Current User (HKCU) #information for the currently logged in user. Is a symbolic link that is under HKUsers. contains *SID* Security Idenitifier 
+HKEY Local Machine (HKLM) #settings and configurations for the local machine
+BCD000000 = boot configurations
+HARDWARE = list of connected devices and drivers
+SAM = security authentication for local logins credentials. Must send as encrpyted over network.
+SECURITY = settings and configurations for use and permissions for LSASS
+SOFTWARE = system wide software
+SYSTEM = start up programs, start up activations, that deal on boot or driver load order
+HKEY Users (HKU) #Contains all the users gui information. Users must have had a physical login to be entered as an entry.
+HKEY Current Config (HKCC) #contains current configuration loaded within the windows current registry. Is a syombolic link to HKCurrentUser.
+new-item creates keys and subkeys
+reg.exe /? # pulls up reg operations
+reg query HKLM\Software\Microsoft\Windows\Currentversion\Run or RunOnce
+reg query HKCU\Software\Microsoft\Windows\Currentversion\Run or RunOnce
+reg query HKEY_Users
+use powershell instead of reg
+get-item HKLM:\
+get-item HKLM:\* #shows all entries within that key
+get-childitem HKLM:\
+get-childitem HKLM:\ -recurse #show all subkeys
+set-ItemProperty -path  HKLM:\Software\Microsoft\Windows\CurrentVersion\Run -name malware -value "Im_Innocent"  
+get-item -path HKLM:\Software\Microsoft\Windows\CurrentVersion\Run 
+new-ItemProperty -path  HKLM:\Software\Microsoft\Windows\CurrentVersion\Run -name malware -value "Im_Innocent_Plz_Dont_Delete_me" -force
+get-psdrive #to see currently mounted drive
+HKCU and HKLM are like drives
+to create HKU as a psdrive
+new-psdrive -name HKU -psprovider registry -root HKEY_Users
+add-content -value "new-psdrive -name HKU -psprovider registry -root HKEY_Users" $profile.AllUsersAllHosts
+get-item  -path HKU:\*\Software\Microsoft\Windows\CurrentVersion\Run #show all users
+remove-psdrive HKU
+&$profile.allusersallhosts to reload
+cd HKU:\
+or 
+get-item -path registry::HKEY_Users\*\Software\microsoft\windows\currentverion\run #shows all info without having to create a new drive
+psdrives are only temporary in nature
+HKLM profile list shows all users who have logged in
+image file execution options #everytime you run this executable, perform the following actions
+realtime monitoring needs to be turned off to set up persistence in image file execution options
+set-MpPreference -DisableRealtimeMonitoring $TRUE
+utilman.exe
+
+get-childitem "registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList"
+gci -recurse C:\ -name "fortune cookies.txt" -force
+--------------------------------------------------------------------------------------------------------------------------------------------------
+WINDOWS BOOT:
+Root Kit
+Boot Kit
+Firm Kit
+
+BIOS will only use MBR
+UEFI will only use GPT (newer)
+
+when bios is loaded, checks to see if a MBR(first 512 bytes on harddrive) exists. 
+MBR can have only 4 active partitions at a time.
+
+winload for cold start
+winresume for warm start/resume
+
+Type C:\Windows\Panther\setupact.log | findstr /i "Detected boot environment"
+bcdedit | findstr /i winload
+results: path         /windows/system32/winload.exe means bios
+bcdedit | findstr /i winresume
+bcdedit #shows windowboot, windows boot loader. #look for current identifier for host enumeration
+bcdedit /set description "Windows 930" #edits the information
+bcdedit /set safemode minimal #loads just a basic shell
+bcdedit /set safeboot Network #loads basic shell with network capabilities
+bcdedit /set safebootalternateshell #allows you to load othershells aside from pwsh and cmd
+bcdedit /deletevalue safeboot #loads gui normally AND bcdedit /deletevalue safebootalternateshell #load gui normally
+msconfig on a GUI to choose boot process settings instead of manually editing in pwsh or cmd
+or edit services, hide microsoft services, then disable specified services.. uncheck safe mode.
+msinfo32 on a GUI to look for BIOS Mode
+secure atention sequence = ctrl alt del
+pagefile.sys 
+shutdown /a #prevents shutdown
+grep -WoFf | finds differences
+
+-------------------------------------------------
+WINDOWS AUDITING/LOGGING:
+### Windows Artifacts ###
+what users are we looking at : SID
+get-wmiobject win32_useraccount | select name,sid (powershell)
+get-localuser | select name,side (Powershell)
+wmic useraccount get name,sid (CMD.EXE Only)
+
+#USER ASSIST Registry#
+view executable files run
+get-itemproperty 'REGISTRY::HKEY_USERS\*\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\UserAssist\{GUID}\Count\'
+CEBFF5CD-ACE2-4F4F-9178-9926F41749EA GUID
+
+view shortcut files
+F4E57C4B-2036-45F0-A9AB-443BCFE33D9F GUID   - this means probable lmk persitence
+
+#WINDOWS BACKGROUND ACTIVITY MODERATOR (BAM)# only shows up when things have been executed through GUI, not command line sessions
+
+location: show in reg edit
+get-item HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\bam\State\UserSettings\* #On 1809 and new
+get-item HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\bam\UserSettings\* #On 1803 and below
+Get-Item HKLM:\SYSTEM\CurrentControlSet\Services\bam\state\UserSettings\* ## works
+Get-Item HKLM:\SYSTEM\CurrentControlSet\Services\bam\UserSettings\* 
+Get-Itemproperty 'HKLM:\SYSTEM\CurrentControlSet\Services\bam\State\UserSettings\S-1-5-21-1584283910-3275287195-1754958050-1005' #put in specific users SID
+#output shows the BAM artifact from andy.dwyer
+
+#RECYCLE BIN#
+gci 'C:\$RECYCLE.BIN' -Recurse -Verbose -Force | select *
+gci 'C:\$RECYCLE.BIN' -Recurse -Force
+gci "C:\`$RECYCLE.BIN" -Recurse -Force
+$I original PATH and name
+$R content of deleted files
+gc 'C:\$Recycle.Bin\<SID>\$I,$R.exe,txt' 
+gci 'C:\$Recycle.Bin' -Force -Recurse | ForEach-Object { if ( ($_.extension) -like ".txt") { if ($_.Name -like "`$R*") { Write-Host $_.Name -NoNewline ; Write-Host " --> " -ForegroundColor Green -NoNewline ; get-content $_.fullname } } }
+#IMPORTANT?#
+gci 'C:\$Recycle.Bin' -Force -Recurse | ForEach-Object { if ( ($_.extension) -like ".txt") { if ($_.Name -like "`$R*") { Write-Host $_.Name -NoNewline ; Write-Host " --> " -ForegroundColor Green -NoNewline ; get-content $_.fullname } } }
+
+#PREFETCH#
+cd C:\windows\prefetch
+gci | select -first 5
+gci -Path 'C:\Windows\Prefetch' -ErrorAction Continue | select * | select -first 5
+
+#JUMP LISTS#
+jump to items users have frequently or recently used or accessed
+gci -Recurse C:\Users\*\AppData\Roaming\Microsoft\Windows\Recent -ErrorAction Continue | select FullName | sort LastAccessTime or CreationTime 
+gci -Recurse C:\Users\*\AppData\Roaming\Microsoft\Windows\Recent -ErrorAction Continue | select FullName, LastAccessTime or CreationTime | ft -Wrap
+Gci C:\users\student\AppData\Roaming\Microsoft\Windows\Recent\AutomaticDestinations | % {z:\strings.exe -accepteula $_} >> c:\recentdocs.txt
+then Get-Content of something we found with full path - can show location of where something was ran
+
+#RECENT FILES#
+List Files in Recent Docs
+get-item HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs ## works
+Get-Item 'Registry::\HKEY_USERS\*\Software\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs\.txt'##works
+
+Convert File HEX to Unicode
+[System.Text.Encoding]::Unicode.Getstring((gp "REGISTRY::HKEY_USERS\*\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs\.txt")."0") 
+0 is the property we are looking at
+change .txt to .ps1 or other extentions
+this gives name of file that has been run
+
+Convert all of a users values from HEX to Unicode
+Get-Item "REGISTRY::HKEY_USERS\*\Software\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs\.txt" | select -Expand property | ForEach-Object { [System.Text.Encoding]::Default.GetString((Get-ItemProperty -Path "REGISTRY::HKEY_USERS\*\Software\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs\.txt" -Name $_).$_)}
+
+#BROWSER ARTIFACTS#
+History will record the access to the file on the website that was accessed via a link
+.\strings.exe 'C:\Users\<username>\AppData\Local\Google\Chrome\UserData\Default\History'
+
+Find FQDNs in SQLite Text Files
+$History = (Get-Content 'C:\users\student\AppData\Local\Google\Chrome\User Data\Default\History') -replace "[^a-zA-Z0-9\.\:\/]",""
+$History| Select-String -Pattern "(https|http):\/\/[a-zA-Z_0-9]+\.\w+[\.]?\w+" -AllMatches|foreach {$_.Matches.Groups[0].Value}| ft
+
+#WINDOWS AUDITING#
+Event Viewer GUI
+eventvwr
+located in C:\Windows\System32\Winevt 
+
+show all logs in cli
+wevtutil el
+get log info
+wevtutil gli security
+get last 3 events
+wevtutil qe security /c:3 /f:text
+
+view/analyze event logs -powershell
+view newest 10 system logs
+get-eventlog -logname system -newest 10
+view the entire message field in the security log
+get-eventlog -logname security | ft -wrap
+get-eventlog -logname *
+#### get-eventlog -logname security -message "*remote*" | ft -wrap ####
+search logs with multiple criteria
+get-winevent -filterhashtable @{logname="security";id="4624"} | select -first 5 | ft -wrap
+
+user added to privileged group id: 4728, 4732, 4756
+security-enabld group modification id: 4735
+successful/ failed user account login id: 4624,4625
+
+View Entire Auditpol List
+auditpol /get /category:*
+
+Set File SYstem subcategory to audit
+auditpol /set /subcategory:"File System"
+
+Remove File System subcategory auditing
+auditpol /set /subcategory:"File System" /success:disable
+
+To list the global object access auditing entries set on files or folders:
+auditpol /resourceSACL /type:File /view
+
+To list the global object access auditing entries set on Registry Keys
+auditpol /resourceSACL /type:Key /view
+
+application - contains events logged by apps
+security - contain events such as valid/invalid logon attemps
+system - contains events logged by system components such as driver failures
+customlog - contains events logged by apps that create a custom log. using custom log enables and app to ocntrol the size of log or attach ACL's without touching the application
+
+POWERSHELL TRANSCRIPT
+allows capture of input and output of windows powershell commands into a text-based script
+start-transcript
+view powershell console history
+view entire powershell history
+get-history
+get-content "C:\users\$env:username\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadline\ConsoleHost_history.txt"
+
+SCRIPT BLOCK LOGGING
+Logs detailed processing of commands, script blocks, functions, and scripts to the Microsoft-Windows-PowerShell/Operational event log.
+
+Logging is enabled through the Turn on PowerShell Script Block Logging Group Policy setting in
+Administrative Templates → Windows Components → Windows PowerShell
+
+Turn on script black logging via the Registry
+reg.exe add HKLM\SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging\ /v EnableScriptBlockLogging /t REG_DWORD /d 1 /f
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
