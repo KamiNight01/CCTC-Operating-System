@@ -1112,11 +1112,89 @@ Yara for python 2.7
 openpyxl: python -m pip install openpyxl
 ujson: python -m pip install ujson
 
+________________________________________________________________________________________________________________________________________________________
+DAY 12
+________________________________________________________________________________________________________________________________________________________
+Group Nesting
+
+What security flaw does group nesting create?
+ANS----AD nested group enumeration demo
 
 
+Local Administrator Logon:
+Never login as administrator
+RUNAS
+Default local administrator disabled
+----------------------------------------------------------------------------------------------------------------------
+Group Policy Object Queries:
+gpresult
+Get-GPResultantSetOfPolicy
+Demo
+----------------------------------------------------------------------------------------------------------------------------
+gwmi win32_service | where { $_.name -like "adws" -or $_.name -like "kdc" -or $_.name -like "netlogon" -or $_.name -like "dns" } | select name,state,status
+ -- looking for the 4 maiun services  for a domain controller for it  actually run. which are the following.  -
+ name     state   status  
+ADWS     Running 	OK
+DNS      Running 	OK
+Kdc      Running 	OK
+Netlogon Running 	OK
 
 
+[  Get-ADDomainController  ]
 
+ Get-ADDomain army.warriors     - checks configuration for the current domian we looking at 
+ Get-ADForest army.warriors
+ 
+ 
+ get-smbshare  ( check for netlogon and sysvol to see if it's there or not) ( all shares needed to see if your domain controller is working or not.
+ 
+ 
+ 
+ --------------------------------------------------------------------------------------------
+ Get-Command -Module ActiveDirectory
+  get all command that are  part of the active directory 
+   Get-Module ActiveDirectory 
+   
+   Get-ADGroup -Filter * | select Name , GroupCategory, Groupscope 
+   
+ 
+   Get-ADGroupMember -Identity "domain Admins"
+   Get-ADGroupMember -Identity "domain Admins" -Recursive
+    - get a lot more information 
+    
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+Suspicious Activity:
 
+Unknown admin accounts
+Active outside normal work hours
+Nested groups
+Service accounts logging into hosts
+User accounts logging into critical infrastructure (i.e. Domain Controller)
 
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+DSTOOLS:
+    DSADD
+    DSGET
+    DSMOD                      (NOT Fesable anymore ---outdated)
+    DSMOVE
+    DSQUERY
 
+PowerShell AD Commands
+
+(VERB)-AD(NOUN)
+
+Examples
+Get-ADUser
+New-ADUser -Name "Bad Guy" -PasswordNotRequired 1 -Path "OU=3RD LPT,OU=CCO,OU=3RDBN,OU=WARRIORS,DC=ARMY,DC=WARRIORS"
+
+Get-ADUser -Filter * -Properties * |select -First 10    --- getting hte first 10 users 
+
+Get-ADUser -Filter * -Properties *| where{ $_.AllowReversiblePasswordEncryption -eq $true } |select name   ( to grab a specific property you wanna compare) 
+
+Search-ADAccount -AccountDisabled   ----- to check  for all disabled users on the machine
+
+Search-ADAccount -AccountExpired |select name     all expired account on the active directory.
+
+### Get-ADUser -Filter * -Properties * |where { $_.<property> -like "*<pattern to match>*" } | select name <whatever property>  
+Get-ADUser -Filter * -Properties * |where { $_.officephone -like "*1234*" } | select name,  officephone 
+Get-ADUser -Filter * -Properties * |where { $_.description -like "*Built*in*" } | select name 
