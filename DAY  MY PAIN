@@ -122,7 +122,7 @@ man  hier
    
    /etc/passwd  
    nginx:x:100:101:nginx:/var/lib/nginx:/sbin/nologin
-   Username:Password:User ID (UID):Group ID (GID):comments:Home directory:Home directory: 
+   Username::User ID (UID):Group ID (GID):comments:Home directory:Home directory: 
    
    _____________________________________________________________________________________________________________
    
