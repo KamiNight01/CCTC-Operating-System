@@ -1,0 +1,241 @@
+### PowerShell ###
+
+wmiprocess to see the malicious name to a process
+
+#PROFILES
+$profile can provide means of persistence 
+$profile gives you by default current user; current host
+$profile.allusersallhosts
+profile loads upon execution of powershell
+&$profile.allusersallhosts #run this command to reload profile to update it
+start powershell -windowstyle hidden #IS A RED FLAG
+
+#REMOTE SESSIONS
+get-pssessionconfiguration #tells us who can remote management
+NT Authority is kernel
+get-item WSMAN:\localhost\client\trustedhosts | select -expandproperty value #queries for trusted hosts
+
+-------------------------------------------------------------------------------------------------------------
+
+### Linux Essentials ###
+
+!!ENUMERATION PRIORITY!!
+
+#where am i 
+hostname / uname -a
+#who am i
+whoami / id
+#what am i allowed to do
+sudo -l
+#whats going on
+w / who / ps -elf / top
+#whats that
+<         >
+#if something of interest; why is that happening#
+<                                               >
+#how is that happening#
+<                     >
+#whats in there
+pwd / ls -lisa
+
+#Network Enumeration
+ip addr or ip a #provides interfaces, status and IP address
+sudo ss -ntlp | less #listening ports
+ip route or ip r  
+ip neigh or ip n #shows machines the computer has talked to
+sudo iptables -L  !!#deprecated or nft list tables
+
+/etc/passwd | grep student 
+/etc/group | grep student 
+ls - lisa /etc | less #good too look at permissions and owner
+man -k (put in keyword)
+
+-------------------------------------------------------------------------------------------------------------
+
+### Linux Boot ###
+
+/etc/bash.bashrc is system wide
+
+##Systemd##
+uses Systemctl
+
+/etc/systemd/system #SystemD Configuration file Targets #User created services
+/lib/systemd/system 
+/lib/systemd/systemd
+/usr/lib/systemd
+#ls -lisa /lib/systemd/system/default.target
+#cat /lib/systemd/system/graphical.target
+#ls -l | grep -v wants | grep run
+Run Levels
+0 poweroff.target
+1 rescue.target
+2 multi-user.target
+3 multi-user.target
+4 multi-user.target
+5 garphical.target
+6 reboot.target
+#systemctl list-dependencies graphical.target
+#systemctl show -p Wants graphical.target (shows all of the wants)
+#systemctl list-unit-files 
+#systemctl start | stop 
+#sytemctl cat graphical.target #tells you location of graphical.target
+/etc/profile global #good place to mess up someones logins with persistence
+#interactive login shells
+homedirectory/.profile individual
+homedirectory/.bash.bashrc
+#interactive non-login shells
+/etc/profile.d #has scripts for profile
+
+##SYSV##
+uses service
+
+#sudo dmidecode -t bios (tells us if we are on bios or uefi)
+#lsblk (shows us our disks are in the system and where they ar mounted)
+#df -h (shows us the directories the actual disks fall under) /dev
+#vda1 (vda is disk) (1 is the partition number)
+#sudo xxd -l 512 -g 1 /dev/vda (/dev/sda on linuxop station) (hex dumps of a file)
+#mbr starts with eb 63 90 (eb hex representation of assembly code that tells system to jump to 
+memory position 63, no op is 90) partition are 16 bytes long. last two bytes are magic number (55 aa)
+#sudo parted -l (another command to see if we have bios(msdos) or GPT, also shows disk location)
+#sudo dd if=/dev/sda of=MBRcopy bs=1 count=512 (make a copy of MBR)
+#GRUB located in /boot/grub/menu.lst (grub has an OS selection screen) #not on our systems
+/boot/grub/grub.cfg #is on our systems
+#kernel is process 0, mounts the / filesystem [ktthread]
+#/sbin/init or systemd daemon, the very first process started by kernel with PID of 1
+#ls -l /sbin/init to determine which init system we are using
+#sudo lsmod (lists kernel modules(allows kernel to interact)
+#/etc/inittab runes level 0-6
+#/etc/init.d/ holes entire starup process as scripts S means Start K means Kill
+#service <service name> start | stop | restart | status| | reload | ...
+#service --status-all
+#ps -p 1 #gives us the PID of 1 which is for init. will show systemd or sysv
+#pstree #shows a tree structure of all the processes
+#cat /etc/inttab #shows the default configuration run level
+#ls /etc/init.d #holds all of the S and K scripts 
+#ls -l /etc/rc<1-6>.d #anything init related is for SysV systems only
+/etc/init.d/rc #SysV rc directories
+Run level 0 - halt
+run level 1 - single user mode
+run level 2 - multiuser, no networking
+run level 3 - full usermode, with networking
+run level 4 - unused
+run level 5 - x11 (GUI)
+run level 6 - reboot (never set initdefault to this) 
+#init 6 to reboot
+#if something running ! init.d , probably malicious
+dd if=/home/bombadil/mbroken of=mfixed bs=1 count=16 skip=446
+
+--------------------------------------------------------------------------------------------------------------
+
+### Linux Validity ###
+
+ps -Nlf --ppid 2 --forest | grep --context=#(provides before and after) -B(before) or -A(after) 8 (certain number of lines) ps #means anything with a parent id of 2 
+ps -Nlf --ppid 2 --forest
+top #dynamic proccess list, press F to select fields to display, shift v sorts in order
+htop #another version of top with more information, f2 for fields display information
+
+### System Calls ###
+
+fork() to run a copy of itself, exec() start a program replacing current process exec(program)
+a capital clone of a process means there is a cronjob running
+/usr/sbin/cron
+  /usr/sbin/CRON
+
+malicious processes are sometimes orphane and named to make it look like a daemon process 
+"ps --ppid 1 -lf" finds all the child processes for SysV Init
+jobs #display list of jobs running in background
+kill %<job number> - terminate process by job number
+ctrl -z or kill -19 to stop / suspend the job
+kill -9 <pid> or pkill -9 <process name>
+defunct / zombie is Z
+
+### Cron Jobs ### 
+
+Scheduled tasks
+#system cron jobs # run as root and rigidly scheduled, controlled by '/etc/crontab', perform system wide mainenence tasks (cleaning out /tmp or rotating logs
+/etc/crontab, /var/spool/cron, /etc/cron.d
+#user cron jobs # 'crontab' command to create user cron jobs
+stored in /var/spool/cron/crontabs/
+crontab -e #to edit my cronjobs
+crontab -l #to list my cronjobs
+sudo contab -e -u #to edit other users cronjobs
+crontab -u [user] file
+crontab -l -u [user] - Dispaly users crontab contents
+crontab -r -u [user] - remove users crontab contents
+crontab -e -u [user] - edits users crontab contents
+
+ls -la /proc
+ls -la /proc/<pid>
+
+sudo lsof | tail -30 #list all open files being used by every process
+sudo lsof -c sshd #list all open files for specific process
+sudo lsof -i :123
+only worried about numbered file descriptors aka streams
+0>in 1>out 2>err
+sudo systemctl list-units --all --type service
+sudo systemctl list-units --all --type timer
+systemd has functionality called timers that can be attached to services. this can have things happening in intervals without cronjobs being scheduled
+systemctl cat anacron.timer #shows the timer for anacron service that was scheduled
+htop init
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+### Linux Auditing and Logging ###
+#SysV#
+#Authentication LogTypes#
+tail (-n15) or cat /var/log/auth.log - Authentication related events
+last -f /var/run/utmp - Users currently logged in
+last -f /var/log/wtmp - history file for successful logins
+sudo last -f /var/log/btmp - failed login attempts
+
+#Application LogType#
+Apache - web server (dir)
+apt - package manager (dir)
+/var/log/mysql.log
+0.5
+
+#System LogType#
+/var/log/messages - Legacy catch all
+/var/log/syslog - Ubuntu/Debian catch all
+dmesg = Device Messenger (queiries /proc/kmsg)
+  Kernal Ring Buffer - never fills
+  First logs generated by the system
+
+#Logging at a glance#
+location /var/log
+config file /etc/rsyslog.conf
+service /usr/sbin/rsyslogd
+
+#Logging Daemon#
+/usr/sbin/rsyslogd
+  User space daemon - read messages written to /dev/log and formats and stores them based on /etc/rsyslog.conf rules
+    syslog() via libc
+    kernal ring buffer
+    audit records via audit subsystem (auditd)
+    
+#config file#
+/etc/rsyslog.conf
+  log entries follow syslog standard facility.severity
+  facility = what program, or part of system, log is from
+  severity = urgency
+@@ means UDP, @ means tcp 
+
+#Log Enumeration/Management#
+  log rotate
+    /etc/logrotate.conf
+    how large to let files get. how long to keep them.
+
+#Useful Logging Commands#
+tail -f -continuously show end of file
+less /var/log/syslog - view log in page viewer
+logger - send a user generated message to system log i.e. starting update
+> /var/log/messages - wipes logs
+  why do this as opposed to deleting/recreating files?
+last -f /var/log{wtmp,btmp} - needed to view data files
+
+#SYSTEMD#
+#JOURNALD#
+journalctl -e #command to see last logs
+journalctl --list-boots
+journalctl -b (bootid)
+journalctl -u ssh.service
