@@ -165,3 +165,11 @@ Find the unprofessional email addresses. List the email's domain.?
 Get-ADUser -Filter * -Properties * | where {$_.mail -notlike "*mil@mail.mil*" } | select name, mail
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------
+The flag is the unprofessionally-named file located somewhere on the Warrior Share.
+
+Connect to the Warrior Share:
+
+net use * "\\file-server\warrior share"
+
+
+Get-ChildItem .\ -Recurse -File 
