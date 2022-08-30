@@ -173,3 +173,18 @@ net use * "\\file-server\warrior share"
 
 
 Get-ChildItem .\ -Recurse -File 
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+Find the following three accounts:
+
+    two accounts with passwords that never expire
+    one account that has its password stored using reversible encryption
+
+List the last names in Alphabetical Order, comma-separated, no spaces. Do not list built-in accounts.
+
+Flag format: name,name,name
+
+Get-ADUser -Filter * -Properties *| where{ $_.PasswordNeverExpires -eq $true } |select name
+Get-ADUser -Filter * -Properties *| where{ $_.AllowReversiblePasswordEncryption -eq $true } |select name
+
+
