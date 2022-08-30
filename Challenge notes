@@ -187,4 +187,9 @@ Flag format: name,name,name
 Get-ADUser -Filter * -Properties *| where{ $_.PasswordNeverExpires -eq $true } |select name
 Get-ADUser -Filter * -Properties *| where{ $_.AllowReversiblePasswordEncryption -eq $true } |select name
 
+------------------------------------------------------------------------------------------------------------------------------------------------------
+How many users are members of the Domain Admins group?
 
+HINT: No sub-groups.
+
+(Get-ADGroupMember -Identity "domain Admins" ).count
