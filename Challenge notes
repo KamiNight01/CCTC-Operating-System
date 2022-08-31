@@ -193,3 +193,18 @@ How many users are members of the Domain Admins group?
 HINT: No sub-groups.
 
 (Get-ADGroupMember -Identity "domain Admins" ).count
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+Scenario: Text files are being exfiltrated from the machine using a network connection. The connections still occur post-reboot, 
+according to network analysts.
+The junior analysts are having a hard time with attribution because no strange programs or ports are running, 
+and the connection seems to only occur in 60-second intervals,every 15 minutes.
+Task: Determine the means of persistence used by the program, and the port used. The flag is the command that allows exfiltration,
+and the file its persistence mechanism uses.
+Flag format: command,persistence
+Machine: Terra
+
+htop
+dmesg
+systemctl cat  whatischaos.timer
+systemctl cat  whatischaos.service 
