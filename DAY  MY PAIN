@@ -797,7 +797,7 @@ wevtutil qe security /c:3 /f:text
 Get-EventLog -LogName System -Newest 10
 
 View the entire message field in the Security Log
-Get-Eventlog -LogName Security | ft -wrap
+Get-Eventlog -LogName Security | ft -wrap 
 
 Search logs with mutiple criteria
 get-winevent -FilterHashtable @{logname="security";id="4624"} | select -first 5 | ft -wrap
