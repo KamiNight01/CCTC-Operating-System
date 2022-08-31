@@ -1,3 +1,12 @@
+Mehanism- what caused somethng ot happen 
+(DO NOT CAT BINARIES )
+(DO NOT GET STRINGS OF BINARY) 
+(DO NOT GRAB DLLS)
+names of binaries are acceptable
+(you're not looking at drivers)
+
+
+
 Validate processs: 
 
 ps-elf
@@ -18,3 +27,37 @@ PERSISTANCE:
 
  check these for  persistance to see if there's any script.
  
+
+Windows TEST:
+ for network connection 
+ netstat -anob
+  Get-NetTCPConnection
+
+
+Get-Process svchost | select name, id , Path
+ to go look for a process and see where you can find it ( path) 
+ 
+  RUNKEY 
+  
+  
+  
+Profile checker:
+  
+  
+  Function PSProfile-Checker {
+
+$Properties = $profile | get-member -MemberType NoteProperty | Select -ExpandProperty Name
+$Properties | ForEach-Object { if ((test-path $profile.$_) -eq $true) { Write-Host "`$Profile.$_ Exists" } } 
+
+}
+
+PSProfile-Checker
+Remove-Item function:PSProfile-Checker
+
+Mehanism- what caused somethng ot happen 
+(DO NOT CAT BINARIES )
+(DO NOT GET STRINGS OF BINARY) 
+(DO NOT GRAB DLLS)
+names of binaries are acceptable
+(you're not looking at drivers)
+
