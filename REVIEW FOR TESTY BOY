@@ -1,0 +1,20 @@
+Validate processs: 
+
+ps-elf
+lsof ( not recommended)
+ etc/systemd/system
+ or lib/systemd/system
+  use htop or --forest in ps-elf to check 
+  
+   when you're checing for persistance if it's not in the most basic stuff check in.  check bash.rc for bash profiles 
+    as well as /etc/profiles.
+    
+PERSISTANCE:
+
+    crontabs
+   timers 
+   /etc//bash/bash.rc      ---- systemwide file for interactive non login shells 
+   /etc/profiles       --- system wide conf  file for interactive login shells 
+
+ check these for  persistance to see if there's any script.
+ 
