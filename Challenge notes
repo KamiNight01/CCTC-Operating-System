@@ -229,6 +229,8 @@ htop
 
 
 -----------------------------------------------------------------------------------------------------------------
+Query the registry subkey where UAC settings are stored, and provide the flag.
+
 
 reg query HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\Currentversion\Policies\system
 
