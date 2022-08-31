@@ -208,3 +208,24 @@ htop
 dmesg
 systemctl cat  whatischaos.timer
 systemctl cat  whatischaos.service 
+
+----------------------------------------------------------------------------------------------------------------------------------
+
+
+Scenario: The web server has been modified by an unknown hacktivist group. Users accessing the web server are reporting crashes and insane disk usage.
+
+Task: Identify the Cyber Attack Method used by the group, and the command running.
+
+Flag format: method,command
+
+Machine: Terra
+
+Try not to break your machine on this one...
+
+
+DOS ( denial of service)
+htop
+/bin/bash -c /bin/apache3 -lp 443 < /dev/urandom
+
+
+-----------------------------------------------------------------------------------------------------------------
