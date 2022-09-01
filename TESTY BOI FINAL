@@ -1,0 +1,597 @@
+### LINUX Test Review###
+
+Where am I
+Who am I
+What am I allowed to do
+What is going on
+What is that
+why is that happening
+How is that happening
+What is in there
+
+sudo ss -ntlp #like netstat
+SysV/etc/init/rc.d 
+Systemd /etc/systemd/system #for services
+Systemd /lib/systemd/system
+
+ps -Nlf --ppid 2 --forest | grep --context #(provides before and after) -B(before) or -A(after) 8 (certain number of lines) ps #means anything with a parent id of 2 
+ps -Nlf --ppid 2 --forest 
+a capital clone of a process means there is a cronjob running
+/usr/sbin/cron
+  /usr/sbin/CRON
+sudo -l #tells us what we can run sudo on
+sudo crontab -l -u [user] - Dispaly users crontab contents
+/var/spool/cron/crontabs #for users
+/etc/crontab or /etc/cron.d or /var/spool/cron/crontabs #for root
+
+/etc/bash.bashrc #system wide file for interactive non-login shells
+/etc/profile #interactive login shells, GREAT WAY TO ESTABLISH PERSISTENCE
+/etc/profile.d #contains shell scripts
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+### WINDOWS TEST REVIEW ###
+
+Powershell 
+Sysinternals
+net use * \\live.sysinternals.com\tools
+get-psdrive to see our drives
+
+look for weird or large ports
+netstat-anob
+get-nettcpconnection (cmdlets)
+.\TCPView64.exe
+
+get-process 
+get-process svchost | select name,id,path #shows process, pid and its path
+.\processexplorer64.exe
+.\autoruns64.exe #UNIVERSALLY VERY GOOD FOR PROCESSES,SCHEDULED TAKS,GETTING TO HKLM OR FILE LOCATIONS
+taskmgr
+
+looking for artifacts
+Recyling Bin
+gci 'C:\$RECYCLE.BIN' -Recurse -Verbose -Force | select *
+gci 'C:\$RECYCLE.BIN' -Recurse -Force
+gci "C:\`$RECYCLE.BIN" -Recurse -Force
+$I original PATH and name
+$R content of deleted files
+gc 'C:\$Recycle.Bin\<SID>\$I,$R.exe,txt' 
+gci 'C:\$Recycle.Bin' -Force -Recurse | ForEach-Object { if ( ($_.extension) -like ".txt") { if ($_.Name -like "`$R*") { Write-Host $_.Name -NoNewline ; Write-Host " --> " -ForegroundColor Green -NoNewline ; get-content $_.fullname } } }
+#IMPORTANT?#
+gci 'C:\$Recycle.Bin' -Force -Recurse | ForEach-Object { if ( ($_.extension) -like ".txt") { if ($_.Name -like "`$R*") { Write-Host $_.Name -NoNewline ; Write-Host " --> " -ForegroundColor Green -NoNewline ; get-content $_.fullname } } }
+
+BAM
+
+User Assist #everything is encoded in ROT13, use cyber chef
+view executable files run
+get-itemproperty 'REGISTRY::HKEY_USERS\*\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\UserAssist\{GUID}\Count\'
+CEBFF5CD-ACE2-4F4F-9178-9926F41749EA GUID
+view shortcut files
+F4E57C4B-2036-45F0-A9AB-443BCFE33D9F GUID   - this means probable lmk persitence
+
+prefetch
+cd C:\windows\prefetch
+gci | select -first 5
+gci -Path 'C:\Windows\Prefetch' #-ErrorAction Continue | select * | select -first 5
+
+Jumplists
+
+RegKeys
+reg query HKLM\Software\Microsoft\Windows\Currentversion\Run or RunOnce
+reg query HKCU\Software\Microsoft\Windows\Currentversion\Run or RunOnce
+reg query HKEY_Users
+use powershell instead of reg
+get-item HKLM:\
+get-item HKLM:\* #shows all entries within that key
+get-childitem HKLM:\
+get-childitem HKLM:\ -recurse #show all subkeys
+
+taskscheduler app #look at just the library #persistence
+autoruns
+profiles
+$PROFILE.allusersallhosts
+alluserscurrenthosts
+currentuserallhosts
+currentusercurrenthost
+test -path $profile.alluserallhosts
+
+mechanism is the file in the run key that caused everthing to occur (example)
+or dos/credential authenticating
+do not cat or look at binaries, not doing binary analysis, not grabbing handles or dll's, no drivers,
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+### PowerShell ###
+
+wmiprocess to see the malicious name to a process
+
+#PROFILES
+$profile can provide means of persistence 
+$profile gives you by default current user; current host
+$profile.allusersallhosts
+profile loads upon execution of powershell
+&$profile.allusersallhosts #run this command to reload profile to update it
+start powershell -windowstyle hidden #IS A RED FLAG
+
+#REMOTE SESSIONS
+get-pssessionconfiguration #tells us who can remote management
+NT Authority is kernel
+get-item WSMAN:\localhost\client\trustedhosts | select -expandproperty value #queries for trusted hosts
+
+-------------------------------------------------------------------------------------------------------------
+
+### Linux Essentials ###
+
+!!ENUMERATION PRIORITY!!
+
+#where am i 
+hostname / uname -a
+#who am i
+whoami / id
+#what am i allowed to do
+sudo -l
+#whats going on
+w / who / ps -elf / top
+#whats that
+<         >
+#if something of interest; why is that happening#
+<                                               >
+#how is that happening#
+<                     >
+#whats in there
+pwd / ls -lisa
+
+#Network Enumeration
+ip addr or ip a #provides interfaces, status and IP address
+sudo ss -ntlp | less #listening ports
+ip route or ip r  
+ip neigh or ip n #shows machines the computer has talked to
+sudo iptables -L  !!#deprecated or nft list tables
+
+/etc/passwd | grep student 
+/etc/group | grep student 
+ls - lisa /etc | less #good too look at permissions and owner
+man -k (put in keyword)
+
+-------------------------------------------------------------------------------------------------------------
+
+### Linux Boot ###
+
+/etc/bash.bashrc is system wide
+
+##Systemd##
+uses Systemctl
+
+/etc/systemd/system #SystemD Configuration file Targets #User created services
+/lib/systemd/system 
+/lib/systemd/systemd
+/usr/lib/systemd
+#ls -lisa /lib/systemd/system/default.target
+#cat /lib/systemd/system/graphical.target
+#ls -l | grep -v wants | grep run
+Run Levels
+0 poweroff.target
+1 rescue.target
+2 multi-user.target
+3 multi-user.target
+4 multi-user.target
+5 garphical.target
+6 reboot.target
+#systemctl list-dependencies graphical.target
+#systemctl show -p Wants graphical.target (shows all of the wants)
+#systemctl list-unit-files 
+#systemctl start | stop 
+#sytemctl cat graphical.target #tells you location of graphical.target
+/etc/profile global #good place to mess up someones logins with persistence
+#interactive login shells
+homedirectory/.profile individual
+homedirectory/.bash.bashrc
+#interactive non-login shells
+/etc/profile.d #has scripts for profile
+
+##SYSV##
+uses service
+
+#sudo dmidecode -t bios (tells us if we are on bios or uefi)
+#lsblk (shows us our disks are in the system and where they ar mounted)
+#df -h (shows us the directories the actual disks fall under) /dev
+#vda1 (vda is disk) (1 is the partition number)
+#sudo xxd -l 512 -g 1 /dev/vda (/dev/sda on linuxop station) (hex dumps of a file)
+#mbr starts with eb 63 90 (eb hex representation of assembly code that tells system to jump to 
+memory position 63, no op is 90) partition are 16 bytes long. last two bytes are magic number (55 aa)
+#sudo parted -l (another command to see if we have bios(msdos) or GPT, also shows disk location)
+#sudo dd if=/dev/sda of=MBRcopy bs=1 count=512 (make a copy of MBR)
+#GRUB located in /boot/grub/menu.lst (grub has an OS selection screen) #not on our systems
+/boot/grub/grub.cfg #is on our systems
+#kernel is process 0, mounts the / filesystem [ktthread]
+#/sbin/init or systemd daemon, the very first process started by kernel with PID of 1
+#ls -l /sbin/init to determine which init system we are using
+#sudo lsmod (lists kernel modules(allows kernel to interact)
+#/etc/inittab runes level 0-6
+#/etc/init.d/ holes entire starup process as scripts S means Start K means Kill
+#service <service name> start | stop | restart | status| | reload | ...
+#service --status-all
+#ps -p 1 #gives us the PID of 1 which is for init. will show systemd or sysv
+#pstree #shows a tree structure of all the processes
+#cat /etc/inttab #shows the default configuration run level
+#ls /etc/init.d #holds all of the S and K scripts 
+#ls -l /etc/rc<1-6>.d #anything init related is for SysV systems only
+/etc/init.d/rc #SysV rc directories
+Run level 0 - halt
+run level 1 - single user mode
+run level 2 - multiuser, no networking
+run level 3 - full usermode, with networking
+run level 4 - unused
+run level 5 - x11 (GUI)
+run level 6 - reboot (never set initdefault to this) 
+#init 6 to reboot
+#if something running ! init.d , probably malicious
+dd if=/home/bombadil/mbroken of=mfixed bs=1 count=16 skip=446
+
+--------------------------------------------------------------------------------------------------------------
+
+### Linux Validity ###
+
+ps -Nlf --ppid 2 --forest | grep --context=#(provides before and after) -B(before) or -A(after) 8 (certain number of lines) ps #means anything with a parent id of 2 
+ps -Nlf --ppid 2 --forest
+top #dynamic proccess list, press F to select fields to display, shift v sorts in order
+htop #another version of top with more information, f2 for fields display information
+
+### System Calls ###
+
+fork() to run a copy of itself, exec() start a program replacing current process exec(program)
+a capital clone of a process means there is a cronjob running
+/usr/sbin/cron
+  /usr/sbin/CRON
+
+malicious processes are sometimes orphane and named to make it look like a daemon process 
+"ps --ppid 1 -lf" finds all the child processes for SysV Init
+jobs #display list of jobs running in background
+kill %<job number> - terminate process by job number
+ctrl -z or kill -19 to stop / suspend the job
+kill -9 <pid> or pkill -9 <process name>
+defunct / zombie is Z
+
+### Cron Jobs ### 
+
+Scheduled tasks
+#system cron jobs # run as root and rigidly scheduled, controlled by '/etc/crontab', perform system wide mainenence tasks (cleaning out /tmp or rotating logs
+/etc/crontab, /var/spool/cron, /etc/cron.d
+#user cron jobs # 'crontab' command to create user cron jobs
+stored in /var/spool/cron/crontabs/
+crontab -e #to edit my cronjobs
+crontab -l #to list my cronjobs
+sudo contab -e -u #to edit other users cronjobs
+crontab -u [user] file
+crontab -l -u [user] - Dispaly users crontab contents
+crontab -r -u [user] - remove users crontab contents
+crontab -e -u [user] - edits users crontab contents
+
+ls -la /proc
+ls -la /proc/<pid>
+
+sudo lsof | tail -30 #list all open files being used by every process
+sudo lsof -c sshd #list all open files for specific process
+sudo lsof -i :123
+only worried about numbered file descriptors aka streams
+0>in 1>out 2>err
+sudo systemctl list-units --all --type service
+sudo systemctl list-units --all --type timer
+systemd has functionality called timers that can be attached to services. this can have things happening in intervals without cronjobs being scheduled
+systemctl cat anacron.timer #shows the timer for anacron service that was scheduled
+htop init
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+### Linux Auditing and Logging ###
+#SysV#
+#Authentication LogTypes#
+tail (-n15) or cat /var/log/auth.log - Authentication related events
+last -f /var/run/utmp - Users currently logged in
+last -f /var/log/wtmp - history file for successful logins
+sudo last -f /var/log/btmp - failed login attempts
+
+#Application LogType#
+Apache - web server (dir)
+apt - package manager (dir)
+/var/log/mysql.log
+0.5
+
+#System LogType#
+/var/log/messages - Legacy catch all
+/var/log/syslog - Ubuntu/Debian catch all
+dmesg = Device Messenger (queiries /proc/kmsg)
+  Kernal Ring Buffer - never fills
+  First logs generated by the system
+
+#Logging at a glance#
+location /var/log
+config file /etc/rsyslog.conf
+service /usr/sbin/rsyslogd
+
+#Logging Daemon#
+/usr/sbin/rsyslogd
+  User space daemon - read messages written to /dev/log and formats and stores them based on /etc/rsyslog.conf rules
+    syslog() via libc
+    kernal ring buffer
+    audit records via audit subsystem (auditd)
+    
+#config file#
+/etc/rsyslog.conf
+  log entries follow syslog standard facility.severity
+  facility = what program, or part of system, log is from
+  severity = urgency
+@@ means UDP, @ means tcp 
+
+#Log Enumeration/Management#
+  log rotate
+    /etc/logrotate.conf
+    how large to let files get. how long to keep them.
+
+#Useful Logging Commands#
+tail -f -continuously show end of file
+less /var/log/syslog - view log in page viewer
+logger - send a user generated message to system log i.e. starting update
+> /var/log/messages - wipes logs
+  why do this as opposed to deleting/recreating files?
+last -f /var/log{wtmp,btmp} - needed to view data files
+
+#SYSTEMD#
+#JOURNALD#
+journalctl -e #command to see last logs
+journalctl --list-boots
+journalctl -b (bootid)
+journalctl -u ssh.service
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+### WINDOWS ###
+
+# Wiindows Registry #
+
+Windows Registry is like a file system hard drive. REGEDIT to view.
+Hive keys (HKEY_) seperate everything as if they were directorys. Soul purpose is to group items. Holds keys.
+Keys are like subdirectories
+Registry value(entry) are individual settings within the key. Data for values.
+everything is logged in the registry.
+HKEY Classes Root (HKR) #contains file extensions. Is a symbolic link that is under HKLM\Software\
+HKEY Current User (HKCU) #information for the currently logged in user. Is a symbolic link that is under HKUsers. contains *SID* Security Idenitifier 
+HKEY Local Machine (HKLM) #settings and configurations for the local machine
+BCD000000 = boot configurations
+HARDWARE = list of connected devices and drivers
+SAM = security authentication for local logins credentials. Must send as encrpyted over network.
+SECURITY = settings and configurations for use and permissions for LSASS
+SOFTWARE = system wide software
+SYSTEM = start up programs, start up activations, that deal on boot or driver load order
+HKEY Users (HKU) #Contains all the users gui information. Users must have had a physical login to be entered as an entry.
+HKEY Current Config (HKCC) #contains current configuration loaded within the windows current registry. Is a syombolic link to HKCurrentUser.
+new-item creates keys and subkeys
+reg.exe /? # pulls up reg operations
+reg query HKLM\Software\Microsoft\Windows\Currentversion\Run or RunOnce
+reg query HKCU\Software\Microsoft\Windows\Currentversion\Run or RunOnce
+reg query HKEY_Users
+use powershell instead of reg
+get-item HKLM:\
+get-item HKLM:\* #shows all entries within that key
+get-childitem HKLM:\
+get-childitem HKLM:\ -recurse #show all subkeys
+set-ItemProperty -path  HKLM:\Software\Microsoft\Windows\CurrentVersion\Run -name malware -value "Im_Innocent"  
+get-item -path HKLM:\Software\Microsoft\Windows\CurrentVersion\Run 
+new-ItemProperty -path  HKLM:\Software\Microsoft\Windows\CurrentVersion\Run -name malware -value "Im_Innocent_Plz_Dont_Delete_me" -force
+get-psdrive #to see currently mounted drive
+HKCU and HKLM are like drives
+to create HKU as a psdrive
+new-psdrive -name HKU -psprovider registry -root HKEY_Users
+add-content -value "new-psdrive -name HKU -psprovider registry -root HKEY_Users" $profile.AllUsersAllHosts
+get-item  -path HKU:\*\Software\Microsoft\Windows\CurrentVersion\Run #show all users
+remove-psdrive HKU
+&$profile.allusersallhosts to reload
+cd HKU:\
+or 
+get-item -path registry::HKEY_Users\*\Software\microsoft\windows\currentverion\run #shows all info without having to create a new drive
+psdrives are only temporary in nature
+HKLM profile list shows all users who have logged in
+image file execution options #everytime you run this executable, perform the following actions
+realtime monitoring needs to be turned off to set up persistence in image file execution options
+set-MpPreference -DisableRealtimeMonitoring $TRUE
+utilman.exe
+
+get-childitem "registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList"
+gci -recurse C:\ -name "fortune cookies.txt" -force
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Windows Boot #
+
+BIOS will only use MBR
+UEFI will only use GPT (newer)
+
+when bios is loaded, checks to see if a MBR(first 512 bytes on harddrive) exists. 
+MBR can have only 4 active partitions at a time.
+
+winload for cold start
+winresume for warm start/resume
+
+Type C:\Windows\Panther\setupact.log | findstr /i "Detected boot environment"
+bcdedit | findstr /i winload
+results: path         /windows/system32/winload.exe means bios
+bcdedit | findstr /i winresume
+bcdedit #shows windowboot, windows boot loader. #look for current identifier for host enumeration
+bcdedit /set description "Windows 930" #edits the information
+bcdedit /set safemode minimal #loads just a basic shell
+bcdedit /set safeboot Network #loads basic shell with network capabilities
+bcdedit /set safebootalternateshell #allows you to load othershells aside from pwsh and cmd
+bcdedit /deletevalue safeboot #loads gui normally AND bcdedit /deletevalue safebootalternateshell #load gui normally
+msconfig on a GUI to choose boot process settings instead of manually editing in pwsh or cmd
+or edit services, hide microsoft services, then disable specified services.. uncheck safe mode.
+msinfo32 on a GUI to look for BIOS Mode
+secure atention sequence = ctrl alt del
+pagefile.sys 
+shutdown /a #prevents shutdown
+grep -WoFf | finds differences
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+### Windows Validity ###
+
+tasklist #view processes in windows
+tasklist | get-member #shows methods
+get-process #shows other information in addition to tasklist
+taskmgr #shows processes
+dll #contains pointers to recources available for other programs to interact with
+get-ciminstance win32_process #shows all + hidden
+get-ciminstance win32_process | measure
+get-process | measure #shows proccesses count
+#get-ciminstance win32_process | select * | select processid, parentprocessid, name, commandline #best version to run
+#get-ciminstance win32_process | select * | select processid, parentprocessid, name, commandline | where { $_.name like *powershell* } #isolate to the suspicious malware
+#get-ciminstance win32_process | select * | select processid, parentprocessid, name, commandline | where { $_.processid like *PID* } | fl
+#get-ciminstance win32_process | select * | select processid, parentprocessid, name, commandline | where { $_.processid like *ParentProcess#* } | fl
+#get-ciminstance win32_process | select * | where { $_.processid -like "suspicious id from prior step" } | fl
+get-ciminstance win32_process | select * -first 1
+get-ciminstance win32_process | where -property name -like *LSASS* | select *
+get-ciminstance win32_process | where {$_.Name -like "*LSASS*"} | select *
+get-process -name lsass | select -expandproperty modules | out-file $HOME\desktop\handles.txt -width 4096 or ft -wrap #shows handles for lsass binary
+tasklist /m /fi "IMAGENAME eq lsass.exe" #another way to find handles
+get-process -name powershell | select -expandproperty modules
+sc.exe showsid power #show sid of a service
+.\get-serviceloadordergroup.ps1
+sc.exe queryex type=service state=active or inactive
+scheduled tasks is great for persistence
+schtasks.exe #to view scheduled tasks
+schtasks.exe /query /tn "<taskname>" "/Microsoft/XblGameSave/xblGameSavetask" /v /fo list
+schtasks.exe /query /tn "GoogleUpdateTaskMachineCore{24asd-f325sfd-a215a-sdf214-2af14-2134}" /v /fo list
+task scheduler #gui to see scheduled tasks
+checkout tasks that are running 
+#DO NOT EXPAND MICROSOFT#
+netstat -anob
+get-nettcpconnection #powershell version of netstat #netstat is a static snapshot
+### sysinternals ### tools for finding informaiton
+processexplorer procexp64.exe #allows suspension of process instead of killing
+autoruns64.exe #looks at what starts automatically 
+procmon64.exe -accepteula #monitoring boot process, GUI only tool
+tcpview64.exe #gives a netstatesque network listing + is dynamic"consistantly refreshes"
+google sysinternals handles # handle
+google sysinternals permissions file / effective permissions file  #accesscheck
+### User Access Controls ### GUI only service
+limits privileges of user run applications
+registry key located at "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Windows Auditing and Logging #
+
+# Windows Artifacts 
+what users are we looking at : SID
+get-wmiobject win32_useraccount | select name,sid (powershell)
+get-localuser | select name,side (Powershell)
+wmic useraccount get name,sid (CMD.EXE Only)
+
+#USER ASSIST Registry
+view executable files run
+get-itemproperty 'REGISTRY::HKEY_USERS\*\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\UserAssist\{GUID}\Count\'
+CEBFF5CD-ACE2-4F4F-9178-9926F41749EA GUID
+
+view shortcut files
+F4E57C4B-2036-45F0-A9AB-443BCFE33D9F GUID   - this means probable lmk persitence
+
+#WINDOWS BACKGROUND ACTIVITY MODERATOR (BAM)# only shows up when things have been executed through GUI, not command line sessions
+
+location: show in reg edit
+get-item HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\bam\State\UserSettings\* #On 1809 and new
+get-item HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\bam\UserSettings\* #On 1803 and below
+Get-Item HKLM:\SYSTEM\CurrentControlSet\Services\bam\state\UserSettings\* ## works
+Get-Item HKLM:\SYSTEM\CurrentControlSet\Services\bam\UserSettings\* 
+Get-Itemproperty 'HKLM:\SYSTEM\CurrentControlSet\Services\bam\State\UserSettings\S-1-5-21-1584283910-3275287195-1754958050-1005' #put in specific users SID
+#output shows the BAM artifact from andy.dwyer
+
+#RECYCLE BIN
+gci 'C:\$RECYCLE.BIN' -Recurse -Verbose -Force | select *
+gci 'C:\$RECYCLE.BIN' -Recurse -Force
+gci "C:\`$RECYCLE.BIN" -Recurse -Force
+$I original PATH and name
+$R content of deleted files
+gc 'C:\$Recycle.Bin\<SID>\$I,$R.exe,txt' 
+#IMPORTANT?#
+gci 'C:\$Recycle.Bin' -Force -Recurse | ForEach-Object { if ( ($_.extension) -like ".txt") { if ($_.Name -like "`$R*") { Write-Host $_.Name -NoNewline ; Write-Host " --> " -ForegroundColor Green -NoNewline ; get-content $_.fullname } } }
+
+#PREFETCH
+cd C:\windows\prefetch
+gci | select -first 5
+gci -Path 'C:\Windows\Prefetch' -ErrorAction Continue | select * | select -first 5
+
+#JUMP LISTS
+jump to items users have frequently or recently used or accessed
+gci -Recurse C:\Users\*\AppData\Roaming\Microsoft\Windows\Recent -ErrorAction Continue | select FullName | sort LastAccessTime or CreationTime 
+gci -Recurse C:\Users\*\AppData\Roaming\Microsoft\Windows\Recent -ErrorAction Continue | select FullName, LastAccessTime or CreationTime | ft -Wrap
+Gci C:\users\student\AppData\Roaming\Microsoft\Windows\Recent\AutomaticDestinations | % {z:\strings.exe -accepteula $_} >> c:\recentdocs.txt
+then Get-Content of something we found with full path - can show location of where something was ran
+
+#RECENT FILES
+List Files in Recent Docs
+get-item HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs ## works
+Get-Item 'Registry::\HKEY_USERS\*\Software\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs\.txt'##works
+
+Convert File HEX to Unicode
+[System.Text.Encoding]::Unicode.Getstring((gp "REGISTRY::HKEY_USERS\*\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs\.txt")."0") 
+0 is the property we are looking at
+change .txt to .ps1 or other extentions
+this gives name of file that has been run
+
+Convert all of a users values from HEX to Unicode
+Get-Item "REGISTRY::HKEY_USERS\*\Software\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs\.txt" | select -Expand property | ForEach-Object { [System.Text.Encoding]::Default.GetString((Get-ItemProperty -Path "REGISTRY::HKEY_USERS\*\Software\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs\.txt" -Name $_).$_)}
+
+#BROWSER ARTIFACTS#
+History will record the access to the file on the website that was accessed via a link
+.\strings.exe 'C:\Users\<username>\AppData\Local\Google\Chrome\UserData\Default\History'
+
+Find FQDNs in SQLite Text Files
+$History = (Get-Content 'C:\users\student\AppData\Local\Google\Chrome\User Data\Default\History') -replace "[^a-zA-Z0-9\.\:\/]",""
+$History| Select-String -Pattern "(https|http):\/\/[a-zA-Z_0-9]+\.\w+[\.]?\w+" -AllMatches|foreach {$_.Matches.Groups[0].Value}| ft
+
+#WINDOWS AUDITING
+Event Viewer GUI
+eventvwr
+located in C:\Windows\System32\Winevt 
+
+show all logs in cli
+wevtutil el
+get log info
+wevtutil gli security
+get last 3 events
+wevtutil qe security /c:3 /f:text
+
+view/analyze event logs -powershell
+view newest 10 system logs
+get-eventlog -logname system -newest 10
+view the entire message field in the security log
+get-eventlog -logname security | ft -wrap
+get-eventlog -logname *
+#### get-eventlog -logname security -message "*remote*" | ft -wrap ####
+search logs with multiple criteria
+get-winevent -filterhashtable @{logname="security";id="4624"} | select -first 5 | ft -wrap
+
+user added to privileged group id: 4728, 4732, 4756
+security-enabld group modification id: 4735
+successful/ failed user account login id: 4624,4625
+
+View Entire Auditpol List
+auditpol /get /category:*
+
+Set File SYstem subcategory to audit
+auditpol /set /subcategory:"File System"
+
+Remove File System subcategory auditing
+auditpol /set /subcategory:"File System" /success:disable
+
+To list the global object access auditing entries set on files or folders:
+auditpol /resourceSACL /type:File /view
+
+To list the global object access auditing entries set on Registry Keys
+auditpol /resourceSACL /type:Key /view
+
+application - contains events logged by apps
+security - contain events such as valid/invalid logon attemps
+system - contains events logged by system components such as driver failures
+customlog - contains events logged by apps that create a custom log. using custom log enables and app to ocntrol the size of log or attach ACL's without touching the application
+
+get-content "C:\users\$env:username\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadline\ConsoleHost_history.txt"
